@@ -1,12 +1,100 @@
-:host {
-  display: block;
-  width: 100vw;
-  height: 100vh;
+html,
+body {
+  height: 100%;
   margin: 0;
-  padding: 0;
+}
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
 }
 
 #map {
+  flex: 1;
   width: 100%;
+  position: relative;
+}
+
+.logo-shape {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background-size: cover;
+  background-position: center;
+  clip-path: url(#hexagon-mask);
+  z-index: 1000;
+}
+
+:host ::ng-deep .custom-partner-icon {
+  background: transparent;
+  border: none;
+}
+
+:host ::ng-deep .partner-marker-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
   height: 100%;
+  transform-origin: bottom center;
+}
+
+:host ::ng-deep .partner-hexagon-shadow {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+  transition: transform 0.2s ease-in-out;
+  transform-origin: bottom center;
+}
+
+:host ::ng-deep .partner-marker-content:hover .partner-hexagon-shadow {
+  transform: scale(1.4);
+}
+
+:host ::ng-deep .partner-hexagon-wrapper {
+  width: 68px;
+  height: 80px;
+  background-color: #3498db;
+  clip-path: url(#hexagon-mask);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:host ::ng-deep .inner-hexagon {
+  width: 64px;
+  height: 76px;
+  background-color: white;
+  clip-path: url(#hexagon-mask);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:host ::ng-deep .partner-logo-img {
+  width: 55px;
+  height: 35px;
+  object-fit: auto;
+}
+
+:host ::ng-deep .partner-line {
+  width: 2px;
+  height: 25px;
+  background-color: #1f5080;
+  transition: height 0.2s ease-in-out;
+}
+
+:host ::ng-deep .partner-marker-content:hover .partner-line {
+  height: 45px;
+}
+
+:host ::ng-deep .partner-dot {
+  width: 12px;
+  height: 12px;
+  min-height: 12px;
+  min-width: 12px;
+  background-color: white;
+  border: 2px solid #1f5080;
+  border-radius: 50%;
+  box-sizing: border-box;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
 }
