@@ -1,0 +1,8 @@
+An exception occurred while getting runner-specific build options:
+Error: No tests found matching the following patterns:
+- Included: **/*.spec.ts, **/*.test.ts
+
+Please check the 'test' target configuration in your project's 'angular.json' file.
+    at getVitestBuildOptions (C:\Users\user\world-map\node_modules\@angular\build\src\builders\unit-test\runners\vitest\build-options.js:78:15)
+    at async execute (C:\Users\user\world-map\node_modules\@angular\build\src\builders\unit-test\builder.js:306:13)
+    at async handleAsyncIterator (C:\Users\user\world-map\node_modules\@angular-devkit\architect\src\api.js:38:28)
