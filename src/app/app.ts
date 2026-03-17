@@ -1,6 +1,6 @@
 import {
   Component, OnInit, ElementRef, ViewChild, AfterViewInit,
-  HostListener, ChangeDetectorRef, NgZone
+  HostListener, ChangeDetectorRef, NgZone, ChangeDetectionStrategy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
@@ -11,7 +11,7 @@ const EUROPE_CODES = ['ALB', 'AND', 'AUT', 'BEL', 'BGR', 'BIH', 'BLR', 'CHE', 'C
 const ASIA_CODES = ['AFG', 'ARM', 'AZE', 'BGD', 'BHR', 'BRN', 'BTN', 'CHN', 'GEO', 'IDN', 'IND', 'IRN', 'IRQ', 'JOR', 'JPN', 'KAZ', 'KGZ', 'KHM', 'KOR', 'KWT', 'LAO', 'LBN', 'LKA', 'MMR', 'MNG', 'MYS', 'NPL', 'OMN', 'PAK', 'PHL', 'PSE', 'QAT', 'SAU', 'SGP', 'SYR', 'THA', 'TJK', 'TKM', 'TLS', 'UZB', 'VNM', 'YEM'];
 const AFRICA_CODES = ['AGO', 'BDI', 'BEN', 'BFA', 'BWA', 'CAF', 'CIV', 'CMR', 'COD', 'COG', 'COM', 'CPV', 'DJI', 'DZA', 'EGY', 'ERI', 'ETH', 'GAB', 'GHA', 'GIN', 'GMB', 'GNB', 'GNQ', 'KEN', 'LBR', 'LBY', 'LSO', 'MAR', 'MDG', 'MLI', 'MOZ', 'MRT', 'MUS', 'MWI', 'NAM', 'NER', 'NGA', 'RWA', 'SDN', 'SEN', 'SLE', 'SOM', 'SSD', 'STP', 'SWZ', 'SYC', 'TCD', 'TGO', 'TUN', 'TZA', 'UGA', 'ZAF', 'ZMB', 'ZWE'];
 const CONTINENT_COLORS: Record<string, string> = {
-  Europe: '#3a7bd5', Asia: '#f1c40f', Africa: '#2ecc71', Other: '#cccccc'
+  Europe: '#3a7bd5'
 };
 
 const REGION_BOUNDS: L.LatLngBoundsExpression = [[0, -20], [75, 170]];
@@ -61,6 +61,7 @@ const SEED_POSITIONS_PCT: Array<{ x: number; y: number }> = [
 export interface ProcessedPartner extends PartnerData {
   logoX: number;
   logoY: number;
+  transformStr: string;
   dotX: number;
   dotY: number;
   linePath: string;
@@ -73,7 +74,8 @@ export interface ProcessedPartner extends PartnerData {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class App implements OnInit, AfterViewInit {
   @ViewChild('mapWrapper', { static: true }) mapWrapper!: ElementRef;
@@ -93,29 +95,38 @@ export class App implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.processedPartners = PARTNER_LIST.map((p, i) => ({
       ...p, logoX: -500, logoY: -500,
+      transformStr: `translate3d(-500px, -500px, 0) translate(-50%, -50%)`,
       dotX: 0, dotY: 0,
       linePath: '', offScreen: false, index: i
     }));
   }
 
   ngAfterViewInit(): void {
-    this.initMap();
-    this.map.whenReady(() => setTimeout(() => this.recalculate(), 200));
-    this.map.on('move zoom moveend zoomend', () => this.scheduleRecalc());
+    this.zone.runOutsideAngular(() => {
+      this.initMap();
+
+      this.map.whenReady(() => {
+        setTimeout(() => this.recalculate(), 100);
+      });
+
+      this.map.on('move zoom moveend zoomend', () => this.scheduleRecalc());
+    });
   }
 
   @HostListener('window:resize')
   onResize(): void {
-    this.map?.invalidateSize();
-    setTimeout(() => this.recalculate(), 60);
+    this.zone.runOutsideAngular(() => {
+      this.map?.invalidateSize();
+      this.recalculate();
+    });
   }
 
   // Map init 
   private initMap(): void {
     this.map = L.map('map', {
-      renderer: L.canvas(),
+      renderer: L.canvas({ tolerance: 3 }),
       minZoom: 3, maxZoom: 12,
-      zoomSnap: 0.25, zoomDelta: 0.5,
+      zoomSnap: 0, zoomDelta: 1,
       maxBounds: REGION_BOUNDS,
       maxBoundsViscosity: 1.0,
       zoomControl: false
@@ -143,7 +154,7 @@ export class App implements OnInit, AfterViewInit {
   }
 
   resetZoom(): void {
-    this.map.flyToBounds(REGION_BOUNDS, { duration: 1.0 });
+    this.map.flyToBounds(REGION_BOUNDS, { duration: 0.6 });
   }
 
   // Position engine 
@@ -151,7 +162,7 @@ export class App implements OnInit, AfterViewInit {
     if (this.rafId !== null) return;
     this.rafId = requestAnimationFrame(() => {
       this.rafId = null;
-      this.zone.run(() => this.recalculate());
+      this.recalculate();
     });
   }
 
@@ -162,56 +173,44 @@ export class App implements OnInit, AfterViewInit {
     const H = el.clientHeight;
     if (!W || !H) return;
 
-    this.processedPartners.forEach(p => {
+    for (const p of this.processedPartners) {
       const pt = this.map.latLngToContainerPoint(p.coords as L.LatLngExpression);
       p.dotX = pt.x;
       p.dotY = pt.y;
-    });
+    }
 
-    this.processedPartners.forEach((p, i) => {
-      const dotInView =
-        p.dotX > -HEX_W && p.dotX < W + HEX_W &&
-        p.dotY > -HEX_H && p.dotY < H + HEX_H;
+    for (let i = 0; i < this.processedPartners.length; i++) {
+      const p = this.processedPartners[i];
+      const dotInView = p.dotX > -HEX_W && p.dotX < W + HEX_W && p.dotY > -HEX_H && p.dotY < H + HEX_H;
 
       if (!dotInView) {
         p.offScreen = true;
         p.logoX = Math.max(EDGE_PAD, Math.min(W - EDGE_PAD, p.dotX));
         p.logoY = Math.max(EDGE_PAD, Math.min(H - EDGE_PAD, p.dotY));
-        const dL = Math.abs(p.dotX);
-        const dR = Math.abs(W - p.dotX);
-        const dT = Math.abs(p.dotY);
-        const dB = Math.abs(H - p.dotY);
-        const m = Math.min(dL, dR, dT, dB);
-        if (m === dL) p.logoX = EDGE_PAD;
-        else if (m === dR) p.logoX = W - EDGE_PAD;
-        else if (m === dT) p.logoY = EDGE_PAD;
-        else p.logoY = H - EDGE_PAD;
       } else {
-
         p.offScreen = false;
         const seed = SEED_POSITIONS_PCT[i] ?? { x: 50, y: 50 };
         p.logoX = (seed.x / 100) * W;
         p.logoY = (seed.y / 100) * H;
       }
-    });
+    }
 
-    this.resolveCollisions(25);
+    this.resolveCollisions(15);
 
-    this.processedPartners.forEach(p => {
+    for (const p of this.processedPartners) {
       p.logoX = Math.max(EDGE_PAD, Math.min(W - EDGE_PAD, p.logoX));
       p.logoY = Math.max(EDGE_PAD, Math.min(H - EDGE_PAD, p.logoY));
-    });
-
-    this.processedPartners.forEach(p => {
+      p.transformStr = `translate3d(${p.logoX}px, ${p.logoY}px, 0) translate(-50%, -50%)`;
       const cpX = (p.dotX + p.logoX) * 0.5;
       const cpY = (p.dotY + p.logoY) * 0.5 - 28;
       p.linePath = `M ${p.dotX} ${p.dotY} Q ${cpX} ${cpY} ${p.logoX} ${p.logoY}`;
-    });
+    }
 
     this.cdr.detectChanges();
   }
 
   private resolveCollisions(iterations: number): void {
+    const minDistSq = MIN_LOGO_DIST * MIN_LOGO_DIST;
     for (let iter = 0; iter < iterations; iter++) {
       for (let i = 0; i < this.processedPartners.length; i++) {
         for (let j = i + 1; j < this.processedPartners.length; j++) {
@@ -219,8 +218,10 @@ export class App implements OnInit, AfterViewInit {
           const b = this.processedPartners[j];
           const dx = b.logoX - a.logoX;
           const dy = b.logoY - a.logoY;
-          const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
-          if (dist < MIN_LOGO_DIST) {
+          const distSq = dx * dx + dy * dy;
+
+          if (distSq < minDistSq) {
+            const dist = Math.sqrt(distSq) || 0.01;
             const push = (MIN_LOGO_DIST - dist) / 2;
             const nx = dx / dist;
             const ny = dy / dist;
@@ -241,18 +242,27 @@ export class App implements OnInit, AfterViewInit {
     if (this.cachedGeoJson) { this.renderGeoJson(this.cachedGeoJson); return; }
     fetch('/assets/countries.json')
       .then(r => r.json())
-      .then(data => { this.cachedGeoJson = data; this.renderGeoJson(data); })
-      .catch(err => console.error('GeoJSON load error:', err));
+      .then(data => {
+        this.cachedGeoJson = data;
+        this.zone.runOutsideAngular(() => this.renderGeoJson(data));
+      });
   }
 
   private renderGeoJson(data: any): void {
     L.geoJSON(data, {
+      interactive: false,
       style: f => {
         const code = f?.properties?.['ISO3166-1-Alpha-3'] ?? '';
         const continent = EUROPE_CODES.includes(code) ? 'Europe'
           : ASIA_CODES.includes(code) ? 'Asia'
             : AFRICA_CODES.includes(code) ? 'Africa' : 'Other';
-        return { fillColor: CONTINENT_COLORS[continent], fillOpacity: 0.55, color: '#fff', weight: 0.8, smoothFactor: 1.5 };
+        return {
+          fillColor: CONTINENT_COLORS[continent],
+          fillOpacity: 0.55,
+          color: '#fff',
+          weight: 0.8,
+          smoothFactor: 2.0
+        };
       }
     }).addTo(this.map);
   }
@@ -267,20 +277,17 @@ export class App implements OnInit, AfterViewInit {
     this.selectedAlgae = null;
 
     this.map.flyTo(partner.coords as L.LatLngExpression, 7, {
-      duration: 1.2, easeLinearity: 0.2
+      duration: 0.6, easeLinearity: 0.2
     });
 
-    // Show popup after fly animation ends but only if partner has algaeInfo
     if (partner.algaeInfo) {
-      const onEnd = () => {
-        this.map.off('moveend', onEnd);
+      this.map.once('moveend', () => {
         this.zone.run(() => {
           this.popupPartner = partner as ProcessedPartner & { algaeInfo: AlgaeInfo };
           this.selectedAlgae = this.popupPartner.algaeInfo[0];
           this.cdr.detectChanges();
         });
-      };
-      this.map.once('moveend', onEnd);
+      });
     }
   }
 

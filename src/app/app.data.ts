@@ -17,31 +17,31 @@ export interface PartnerData {
 
 export const PARTNER_LIST: PartnerData[] = [
     {
-        name: 'Partner 1',
+        name: 'CCMAR',
         logo: 'assets/logos/CCMAR.png',
         url: 'https://ccmar.ualg.pt/',
         coords: [37.0432, -7.9733]
     },
     {
-        name: 'Partner 2',
+        name: 'IMG',
         logo: 'assets/logos/IMG.png',
         url: 'https://www.openscreen.cz/',
         coords: [50.0125, 14.4649]
     },
     {
-        name: 'Partner 3',
+        name: 'NORD',
         logo: 'assets/logos/NORD.png',
         url: 'https://www.nord.no/',
         coords: [67.2892, 14.3912]
     },
     {
-        name: 'Partner 4',
+        name: 'ESCI',
         logo: 'assets/logos/ESCI.png',
         url: 'https://www.esci.eu/',
         coords: [53.1415, 8.2045]
     },
     {
-        name: 'Partner 5',
+        name: 'MIGAL',
         logo: 'assets/logos/MIGAL.png',
         url: 'https://www.migal.org.il/en',
         coords: [33.2064, 35.5711],
@@ -135,67 +135,67 @@ export const PARTNER_LIST: PartnerData[] = [
     }
     ,
     {
-        name: 'Partner 7',
+        name: 'BRC',
         logo: 'assets/logos/BRC.png',
         url: 'https://www.brc.hu/en',
         coords: [46.2486, 20.1471]
     },
     {
-        name: 'Partner 8',
+        name: 'ELOOP',
         logo: 'assets/logos/ELOOP.png',
         url: 'https://www.eloop.it/',
         coords: [40.8358, 14.2487]
     },
     {
-        name: 'Partner 9',
+        name: 'IRCCS',
         logo: 'assets/logos/IRCCS.png',
         url: 'https://www.hsr.it/',
         coords: [45.5050, 9.2654]
     },
     {
-        name: 'Partner 10',
+        name: 'MBU',
         logo: 'assets/logos/MBU.png',
         url: 'https://mbu.cas.cz/en',
         coords: [50.0138, 14.4647]
     },
     {
-        name: 'Partner 11',
+        name: 'NECTON',
         logo: 'assets/logos/NECTON.png',
         url: 'https://phytobloom.com/',
         coords: [37.0396, -7.8340]
     },
     {
-        name: 'Partner 12',
+        name: 'SOLARIS',
         logo: 'assets/logos/SOLARIS.png',
         url: 'https://www.solarisbiotech.com/en/bioreactors-fermentors',
         coords: [45.1950, 10.7954]
     },
     {
-        name: 'Partner 13',
+        name: 'SYNOVO',
         logo: 'assets/logos/SYNOVO.png',
         url: 'https://synovo.com/',
         coords: [48.5369, 9.0401]
     },
     {
-        name: 'Partner 14',
+        name: 'TEAGASC',
         logo: 'assets/logos/TEAGASC.png',
         url: 'https://teagasc.ie/',
         coords: [52.8624, -6.9158]
     },
     {
-        name: 'Partner 15',
+        name: 'UNINA',
         logo: 'assets/logos/UNINA.png',
         url: 'https://www.unina.it/it/',
         coords: [40.8469, 14.2583]
     },
     {
-        name: 'Partner 16',
+        name: 'VITO',
         logo: 'assets/logos/VITO.png',
         url: 'https://vito.be/nl',
         coords: [51.2185, 5.0906]
     },
     {
-        name: 'Partner 17',
+        name: 'YEMOJA',
         logo: 'assets/logos/YEMOJA.jpg',
         url: '',
         coords: [33.15, 35.65]

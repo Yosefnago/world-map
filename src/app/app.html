@@ -24,7 +24,7 @@
   <div class="logos-layer">
     @for (p of processedPartners; track p.name) {
     <div class="hex-logo" [class.active]="activeIndex === p.index" [class.off-screen]="p.offScreen"
-      [style.left.px]="p.logoX" [style.top.px]="p.logoY" (mouseenter)="onHexHover(p.index, true)"
+      [style.transform]="p.transformStr" (mouseenter)="onHexHover(p.index, true)"
       (mouseleave)="onHexHover(p.index, false)" (click)="onHexClick(p)">
       <div class="hex-outer">
         <div class="hex-inner">
@@ -33,7 +33,7 @@
       </div>
       <div class="hex-tooltip">
         <span class="tooltip-name">{{ p.name }}</span>
-        <span class="tooltip-hint">Click to zoom</span>
+        <span class="tooltip-hint">Click for details</span>
       </div>
     </div>
     }

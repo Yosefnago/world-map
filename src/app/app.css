@@ -74,11 +74,10 @@
   cursor: pointer;
   z-index: 4;
   transition:
-    left 0.12s ease-out,
-    top 0.12s ease-out,
+    transform 0.12s ease-out,
     filter 0.22s ease,
     opacity 0.22s ease;
-  will-change: left, top;
+  will-change: transform;
 }
 
 /* Off-screen logos (clamped to edge) smaller, dimmer */
@@ -105,7 +104,7 @@
 .hex-outer {
   width: 100%;
   height: 100%;
-  background: linear-gradient(145deg, #3a7bd5, #1a3a5c);
+  background: linear-gradient(145deg, #36cd3e, #05820b);
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   display: flex;
   align-items: center;
@@ -115,7 +114,7 @@
 
 .hex-logo:hover .hex-outer,
 .hex-logo.active .hex-outer {
-  background: linear-gradient(145deg, #5a9bf5, #2a5aac);
+  background: linear-gradient(145deg, #2fd550, #09a223);
   transform: scale(1.22);
 }
 
@@ -198,18 +197,16 @@
   color: rgba(160, 200, 255, 0.85);
 }
 
-/* Reset Zoom Button (top-right)*/
+/* Reset Zoom Button */
 .reset-zoom-btn {
   position: absolute;
   top: 16px;
   right: 16px;
   z-index: 1000;
-
   display: flex;
   align-items: center;
   gap: 7px;
   padding: 9px 16px 9px 12px;
-
   background: rgba(10, 22, 45, 0.88);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -221,7 +218,6 @@
   font-weight: 500;
   cursor: pointer;
   letter-spacing: 0.2px;
-
   transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
 }
@@ -273,24 +269,10 @@
   border: 1px solid rgba(136, 212, 158, 0.15);
 }
 
-.popup-partner-name {
-  color: #88d49e;
-}
-
 .popup-type-badge {
   color: #88d49e;
   background: rgba(136, 212, 158, 0.15);
   border-color: rgba(136, 212, 158, 0.3);
-}
-
-.popup-properties li::before {
-  background: #88d49e;
-}
-
-.algaeSide-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(136, 212, 158, 0.15);
-  color: #e8f0ff;
 }
 
 .algaeSide-btn:hover {
@@ -302,10 +284,6 @@
   background: rgba(46, 125, 66, 0.8);
   border-color: #88d49e;
   color: #ffffff;
-}
-
-.popup-close:hover {
-  color: #88d49e;
 }
 
 .partner-popup {
@@ -339,9 +317,11 @@
 }
 
 .algaeSide-btn {
+  contain: content;
   width: 220px;
   height: 40px;
   border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #e8f0ff;
   font-family: 'Segoe UI', system-ui, sans-serif;
@@ -349,9 +329,9 @@
   font-weight: 500;
   cursor: pointer;
   outline: none;
-  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: background-color 0.08s linear, border-color 0.08s linear, color 0.08s linear;
+  will-change: background-color;
 }
-
 
 @keyframes fadeIn {
   from {
