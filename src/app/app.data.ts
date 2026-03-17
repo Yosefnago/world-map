@@ -1,41 +1,20 @@
 
-export interface AlgaeData {
+export interface AlgaeInfo {
     name: string;
-    scientificName: string;
+    place: string;
+    country: string;
     type: string;
     properties: string[];
-    coords: L.LatLngExpression;
 }
+
 export interface PartnerData {
     name: string;
     logo: string;
     url: string;
     coords: L.LatLngExpression;
+    algaeInfo?: AlgaeInfo[];
 }
-export const ALGAE_LIST: AlgaeData[] = [
-    {
-        name: 'Nori',
-        scientificName: 'Porphyra',
-        type: 'Red Algae',
-        coords: [35.15, 139.85],
-        properties: [
-            'High protein, Vitamins A, B12, C.',
-            'Thin, papery, becomes chewy when hydrated.',
-            'Wrapping sushi rolls.'
-        ]
-    },
-    {
-        name: 'Kombu',
-        scientificName: 'Laminaria',
-        type: 'Brown Algae (Kelp family)',
-        coords: [43.06, 141.35],
-        properties: [
-            'Extremely high in glutamic acid (strong Umami taste).',
-            'Grows in large underwater "forests" in cold ocean waters.',
-            'Primarily used for Dashi (soup stock).'
-        ]
-    }
-];
+
 export const PARTNER_LIST: PartnerData[] = [
     {
         name: 'Partner 1',
@@ -65,14 +44,96 @@ export const PARTNER_LIST: PartnerData[] = [
         name: 'Partner 5',
         logo: 'assets/logos/MIGAL.png',
         url: 'https://www.migal.org.il/en',
-        coords: [33.2064, 35.5711]
+        coords: [33.2064, 35.5711],
+        algaeInfo: [
+            {
+                name: 'Nori',
+                place: 'Porphyra',
+                country: 'Red Algae',
+                type: 'red',
+                properties: [
+                    'High protein, Vitamins A, B12, C.',
+                    'Thin, papery, becomes chewy when hydrated.',
+                    'Wrapping sushi rolls.'
+                ]
+            }
+        ]
     },
     {
-        name: 'Partner 6',
-        logo: 'assets/logos/ALGAIA.png',
+        name: 'Algaia',
+        logo: 'assets/logos/ALGAIA.jpg',
         url: 'https://www.algaia.com/en/',
-        coords: [49.1114, -1.0664]
-    },
+        coords: [49.1114, -1.0664],
+        algaeInfo: [
+            {
+                name: 'Ascophyllum nodosum',
+                place: 'Brittany',
+                country: 'France',
+                type: 'MacroAlgae',
+                properties: [
+                    'High protein, Vitamins A, B12, C.',
+                    'Thin, papery, becomes chewy when hydrated.',
+                    'Wrapping sushi rolls.'
+                ]
+            },
+            {
+                name: 'Saccharina latissima',
+                place: 'Brittany',
+                country: 'France',
+                type: 'MacroAlgae',
+                properties: [
+                    'High protein, Vitamins A, B12, C.',
+                    'Thin, papery, becomes chewy when hydrated.',
+                    'Wrapping sushi rolls.'
+                ]
+            },
+            {
+                name: 'Palmaria palmata',
+                place: 'Brittany',
+                country: 'France',
+                type: 'MacroAlgae',
+                properties: [
+                    'High protein, Vitamins A, B12, C.',
+                    'Thin, papery, becomes chewy when hydrated.',
+                    'Wrapping sushi rolls.'
+                ]
+            },
+            {
+                name: 'Grateloupia turuturu',
+                place: 'Brittany',
+                country: 'France',
+                type: 'MacroAlgae',
+                properties: [
+                    'High protein, Vitamins A, B12, C.',
+                    'Thin, papery, becomes chewy when hydrated.',
+                    'Wrapping sushi rolls.'
+                ]
+            },
+            {
+                name: 'Gelidium madagascariense',
+                place: 'Madagascar',
+                country: 'Madagascar',
+                type: 'MacroAlgae',
+                properties: [
+                    'High protein, Vitamins A, B12, C.',
+                    'Thin, papery, becomes chewy when hydrated.',
+                    'Wrapping sushi rolls.'
+                ]
+            },
+            {
+                name: 'Macricystis pyrifera',
+                place: 'Eastern Pacific',
+                country: 'Eastern Pacific',
+                type: 'MacroAlgae',
+                properties: [
+                    'High protein, Vitamins A, B12, C.',
+                    'Thin, papery, becomes chewy when hydrated.',
+                    'Wrapping sushi rolls.'
+                ]
+            }
+        ]
+    }
+    ,
     {
         name: 'Partner 7',
         logo: 'assets/logos/BRC.png',
@@ -137,6 +198,6 @@ export const PARTNER_LIST: PartnerData[] = [
         name: 'Partner 17',
         logo: 'assets/logos/YEMOJA.jpg',
         url: '',
-        coords: [33.0076, 35.0924]
+        coords: [33.15, 35.65]
     }
 ];

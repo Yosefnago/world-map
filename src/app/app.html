@@ -1,4 +1,99 @@
-<div id="map"></div>
+<div class="map-wrapper" #mapWrapper>
 
-<div class="logo-shape" style="top: 20px; left: 20px; background-image: url('assets/logo1.png');"></div>
-<div class="logo-shape" style="top: 20px; right: 20px; background-image: url('assets/logo2.png');"></div>
+  <!-- Leaflet Map -->
+  <div id="map"></div>
+
+  <!-- SVG Layer: bezier connection lines from dot to logo -->
+  <svg class="line-overlay" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+        <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+        <feMerge>
+          <feMergeNode in="coloredBlur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+
+    @for (p of processedPartners; track p.name) {
+    <path [attr.d]="p.linePath" class="connection-line" [class.active]="activeIndex === p.index" />
+    }
+  </svg>
+
+  <!-- Hex Logo Layer -->
+  <div class="logos-layer">
+    @for (p of processedPartners; track p.name) {
+    <div class="hex-logo" [class.active]="activeIndex === p.index" [class.off-screen]="p.offScreen"
+      [style.left.px]="p.logoX" [style.top.px]="p.logoY" (mouseenter)="onHexHover(p.index, true)"
+      (mouseleave)="onHexHover(p.index, false)" (click)="onHexClick(p)">
+      <div class="hex-outer">
+        <div class="hex-inner">
+          <img [src]="p.logo" [alt]="p.name" loading="lazy">
+        </div>
+      </div>
+      <div class="hex-tooltip">
+        <span class="tooltip-name">{{ p.name }}</span>
+        <span class="tooltip-hint">Click to zoom</span>
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Reset Zoom Button (top-right) -->
+  <button class="reset-zoom-btn" (click)="resetZoom()" title="Reset zoom">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+      <path d="M3 3v5h5" />
+    </svg>
+    <span>Reset View</span>
+  </button>
+
+  <!-- Partner Info Popup — appears after flyTo ends, only when algaeInfo is present -->
+  @if (popupPartner && selectedAlgae) {
+  <div class="popup-backdrop" (click)="closePopup()"></div>
+  <div class="popup-container">
+    <div class="partner-popup">
+      <div class="popup-header">
+        <img [src]="popupPartner.logo" [alt]="popupPartner.name" class="popup-logo">
+        <div class="popup-header-text">
+          <span class="popup-partner-name">{{ popupPartner.name }}</span>
+          <em class="popup-algae-name">{{ selectedAlgae.name }}</em>
+          <em class="popup-scientific">{{ selectedAlgae.place }}</em>
+        </div>
+        <button class="popup-close" (click)="closePopup()" aria-label="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="popup-badges-container">
+        @if (selectedAlgae.country) {
+        <div class="popup-type-country">{{ selectedAlgae.country }}</div>
+        }
+
+        @if (selectedAlgae.type) {
+        <div class="popup-type-badge">{{ selectedAlgae.type }}</div>
+        }
+      </div>
+      <ul class="popup-properties">
+        @for (prop of selectedAlgae.properties; track prop) {
+        <li>{{ prop }}</li>
+        }
+      </ul>
+    </div>
+
+    <div class="algaeSide">
+      @for (item of popupPartner.algaeInfo; track $index) {
+      <button class="algaeSide-btn" [class.selected]="selectedAlgae === item" (click)="selectAlgae(item)">
+        {{item.name}}
+      </button>
+      }
+    </div>
+  </div>
+  }
+
+</div>

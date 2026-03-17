@@ -1,197 +1,294 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component, OnInit, ElementRef, ViewChild, AfterViewInit,
+  HostListener, ChangeDetectorRef, NgZone
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
-import { AlgaeData, ALGAE_LIST, PartnerData, PARTNER_LIST } from './app.data';
+import { PARTNER_LIST, PartnerData, AlgaeInfo } from './app.data';
 
+// Map colours 
 const EUROPE_CODES = ['ALB', 'AND', 'AUT', 'BEL', 'BGR', 'BIH', 'BLR', 'CHE', 'CYP', 'CZE', 'DEU', 'DNK', 'ESP', 'EST', 'FIN', 'FRA', 'GBR', 'GRC', 'HRV', 'HUN', 'IRL', 'ISL', 'ISR', 'ITA', 'LIE', 'LTU', 'LUX', 'LVA', 'MDA', 'MKD', 'MLT', 'MNE', 'NLD', 'NOR', 'POL', 'PRT', 'ROU', 'RUS', 'SVK', 'SVN', 'SWE', 'TUR', 'UKR', 'VAT'];
 const ASIA_CODES = ['AFG', 'ARM', 'AZE', 'BGD', 'BHR', 'BRN', 'BTN', 'CHN', 'GEO', 'IDN', 'IND', 'IRN', 'IRQ', 'JOR', 'JPN', 'KAZ', 'KGZ', 'KHM', 'KOR', 'KWT', 'LAO', 'LBN', 'LKA', 'MMR', 'MNG', 'MYS', 'NPL', 'OMN', 'PAK', 'PHL', 'PSE', 'QAT', 'SAU', 'SGP', 'SYR', 'THA', 'TJK', 'TKM', 'TLS', 'UZB', 'VNM', 'YEM'];
 const AFRICA_CODES = ['AGO', 'BDI', 'BEN', 'BFA', 'BWA', 'CAF', 'CIV', 'CMR', 'COD', 'COG', 'COM', 'CPV', 'DJI', 'DZA', 'EGY', 'ERI', 'ETH', 'GAB', 'GHA', 'GIN', 'GMB', 'GNB', 'GNQ', 'KEN', 'LBR', 'LBY', 'LSO', 'MAR', 'MDG', 'MLI', 'MOZ', 'MRT', 'MUS', 'MWI', 'NAM', 'NER', 'NGA', 'RWA', 'SDN', 'SEN', 'SLE', 'SOM', 'SSD', 'STP', 'SWZ', 'SYC', 'TCD', 'TGO', 'TUN', 'TZA', 'UGA', 'ZAF', 'ZMB', 'ZWE'];
-
 const CONTINENT_COLORS: Record<string, string> = {
-  Europe: '#3498db',
-  Asia: '#f1c40f',
-  Africa: '#2ecc71',
-  Other: '#cccccc'
+  Europe: '#3a7bd5', Asia: '#f1c40f', Africa: '#2ecc71', Other: '#cccccc'
 };
 
 const REGION_BOUNDS: L.LatLngBoundsExpression = [[0, -20], [75, 170]];
 
+const HEX_W = 76;
+const HEX_H = 88;
+const MIN_LOGO_DIST = 84;
+const EDGE_PAD = 48;
+
+const SEED_POSITIONS_PCT: Array<{ x: number; y: number }> = [
+  //  0 CCMAR   
+  { x: 4, y: 58 },
+  //  1 IMG      
+  { x: 35, y: 30 },
+  //  2 NORD     
+  { x: 22, y: 20 },
+  //  3 ESCI    
+  { x: 35, y: 23 },
+  //  4 MIGAL    
+  { x: 42, y: 59 },
+  //  5 ALGAIA  
+  { x: 7, y: 51 },
+  //  6 BRC     
+  { x: 37, y: 51 },
+  //  7 ELOOP   
+  { x: 23, y: 83 },
+  //  8 IRCCS   
+  { x: 33, y: 61 },
+  //  9 MBU      
+  { x: 39, y: 41 },
+  // 10 NECTON   
+  { x: 4, y: 71 },
+  // 11 SOLARIS  
+  { x: 30, y: 72 },
+  // 12 SYNOVO   
+  { x: 6, y: 40 },
+  // 13 TEAGASC  
+  { x: 9, y: 31 },
+  // 14 UNINA    
+  { x: 18, y: 76 },
+  // 15 VITO    
+  { x: 15, y: 26 },
+  // 16 YEMOJA   
+  { x: 42, y: 72 },
+];
+
+export interface ProcessedPartner extends PartnerData {
+  logoX: number;
+  logoY: number;
+  dotX: number;
+  dotY: number;
+  linePath: string;
+  offScreen: boolean;
+  index: number;
+}
+
 @Component({
   selector: 'app-root',
   standalone: true,
+  imports: [CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements OnInit {
-  private map: L.Map | undefined;
-  private cachedGeoJson: any = null;
+export class App implements OnInit, AfterViewInit {
+  @ViewChild('mapWrapper', { static: true }) mapWrapper!: ElementRef;
 
+  private map!: L.Map;
+  private cachedGeoJson: any = null;
+  private rafId: number | null = null;
+
+  public processedPartners: ProcessedPartner[] = [];
+  public activeIndex: number | null = null;
+  public popupPartner: (ProcessedPartner & { algaeInfo: AlgaeInfo }) | null = null;
+  public selectedAlgae: AlgaeInfo | null = null;
+
+  constructor(private cdr: ChangeDetectorRef, private zone: NgZone) { }
+
+  //Lifecycle 
   ngOnInit(): void {
-    this.initMap();
+    this.processedPartners = PARTNER_LIST.map((p, i) => ({
+      ...p, logoX: -500, logoY: -500,
+      dotX: 0, dotY: 0,
+      linePath: '', offScreen: false, index: i
+    }));
   }
 
+  ngAfterViewInit(): void {
+    this.initMap();
+    this.map.whenReady(() => setTimeout(() => this.recalculate(), 200));
+    this.map.on('move zoom moveend zoomend', () => this.scheduleRecalc());
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.map?.invalidateSize();
+    setTimeout(() => this.recalculate(), 60);
+  }
+
+  // Map init 
   private initMap(): void {
-    if (this.map) return;
-
-    const iconDefault = L.icon({
-      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-      shadowSize: [41, 41]
-    });
-    L.Marker.prototype.options.icon = iconDefault;
-
     this.map = L.map('map', {
       renderer: L.canvas(),
-      minZoom: 3,
-      maxZoom: 10,
-      zoomSnap: 0,
-      zoomDelta: 0.25,
+      minZoom: 3, maxZoom: 12,
+      zoomSnap: 0.25, zoomDelta: 0.5,
       maxBounds: REGION_BOUNDS,
       maxBoundsViscosity: 1.0,
+      zoomControl: false
     }).fitBounds(REGION_BOUNDS);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
-      minZoom: 3,
-      maxZoom: 10,
+      attribution: '© OpenStreetMap contributors © CARTO'
     }).addTo(this.map);
+
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
-      minZoom: 3,
-      maxZoom: 10,
       pane: 'shadowPane'
     }).addTo(this.map);
 
+    this.loadCountries();
 
-    const coordsPopup = L.popup();
-
-    this.map.on('click', (e: L.LeafletMouseEvent) => {
-      const lat = e.latlng.lat.toFixed(4);
-      const lng = e.latlng.lng.toFixed(4);
-
-      coordsPopup
-        .setLatLng(e.latlng)
-        .setContent(`
-          <div style="font-family: sans-serif; text-align: center;">
-            <b style="color: #2c3e50;">Coordinates</b><br>
-            <code style="background: #f4f4f4; padding: 2px 4px; border-radius: 4px;">
-              [${lat}, ${lng}]
-            </code>
-          </div>
-        `)
-        .openOn(this.map!);
+    // White dot markers at the actual partner coordinates
+    this.processedPartners.forEach(p => {
+      L.circleMarker(p.coords as L.LatLngExpression, {
+        radius: 5, fillColor: '#fff', color: '#1a3a5c',
+        weight: 2.5, fillOpacity: 1, interactive: false
+      }).addTo(this.map);
     });
 
-
-    this.loadCountries();
-    this.addAlgaeMarkers();
-    this.addPartnerMarkers();
-
-    window.addEventListener('resize', () => this.map?.invalidateSize());
     setTimeout(() => this.map?.invalidateSize(), 100);
   }
 
-  private loadCountries(): void {
-    if (this.cachedGeoJson) {
-      this.renderGeoJson(this.cachedGeoJson);
-      return;
-    }
+  resetZoom(): void {
+    this.map.flyToBounds(REGION_BOUNDS, { duration: 1.0 });
+  }
 
+  // Position engine 
+  private scheduleRecalc(): void {
+    if (this.rafId !== null) return;
+    this.rafId = requestAnimationFrame(() => {
+      this.rafId = null;
+      this.zone.run(() => this.recalculate());
+    });
+  }
+
+  private recalculate(): void {
+    if (!this.map) return;
+    const el = this.mapWrapper.nativeElement as HTMLElement;
+    const W = el.clientWidth;
+    const H = el.clientHeight;
+    if (!W || !H) return;
+
+    this.processedPartners.forEach(p => {
+      const pt = this.map.latLngToContainerPoint(p.coords as L.LatLngExpression);
+      p.dotX = pt.x;
+      p.dotY = pt.y;
+    });
+
+    this.processedPartners.forEach((p, i) => {
+      const dotInView =
+        p.dotX > -HEX_W && p.dotX < W + HEX_W &&
+        p.dotY > -HEX_H && p.dotY < H + HEX_H;
+
+      if (!dotInView) {
+        p.offScreen = true;
+        p.logoX = Math.max(EDGE_PAD, Math.min(W - EDGE_PAD, p.dotX));
+        p.logoY = Math.max(EDGE_PAD, Math.min(H - EDGE_PAD, p.dotY));
+        const dL = Math.abs(p.dotX);
+        const dR = Math.abs(W - p.dotX);
+        const dT = Math.abs(p.dotY);
+        const dB = Math.abs(H - p.dotY);
+        const m = Math.min(dL, dR, dT, dB);
+        if (m === dL) p.logoX = EDGE_PAD;
+        else if (m === dR) p.logoX = W - EDGE_PAD;
+        else if (m === dT) p.logoY = EDGE_PAD;
+        else p.logoY = H - EDGE_PAD;
+      } else {
+
+        p.offScreen = false;
+        const seed = SEED_POSITIONS_PCT[i] ?? { x: 50, y: 50 };
+        p.logoX = (seed.x / 100) * W;
+        p.logoY = (seed.y / 100) * H;
+      }
+    });
+
+    this.resolveCollisions(25);
+
+    this.processedPartners.forEach(p => {
+      p.logoX = Math.max(EDGE_PAD, Math.min(W - EDGE_PAD, p.logoX));
+      p.logoY = Math.max(EDGE_PAD, Math.min(H - EDGE_PAD, p.logoY));
+    });
+
+    this.processedPartners.forEach(p => {
+      const cpX = (p.dotX + p.logoX) * 0.5;
+      const cpY = (p.dotY + p.logoY) * 0.5 - 28;
+      p.linePath = `M ${p.dotX} ${p.dotY} Q ${cpX} ${cpY} ${p.logoX} ${p.logoY}`;
+    });
+
+    this.cdr.detectChanges();
+  }
+
+  private resolveCollisions(iterations: number): void {
+    for (let iter = 0; iter < iterations; iter++) {
+      for (let i = 0; i < this.processedPartners.length; i++) {
+        for (let j = i + 1; j < this.processedPartners.length; j++) {
+          const a = this.processedPartners[i];
+          const b = this.processedPartners[j];
+          const dx = b.logoX - a.logoX;
+          const dy = b.logoY - a.logoY;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
+          if (dist < MIN_LOGO_DIST) {
+            const push = (MIN_LOGO_DIST - dist) / 2;
+            const nx = dx / dist;
+            const ny = dy / dist;
+            const wa = a.offScreen ? 0.3 : 0.5;
+            const wb = b.offScreen ? 0.3 : 0.5;
+            a.logoX -= nx * push * wa * 2;
+            a.logoY -= ny * push * wa * 2;
+            b.logoX += nx * push * wb * 2;
+            b.logoY += ny * push * wb * 2;
+          }
+        }
+      }
+    }
+  }
+
+  // GeoJSON 
+  private loadCountries(): void {
+    if (this.cachedGeoJson) { this.renderGeoJson(this.cachedGeoJson); return; }
     fetch('/assets/countries.json')
-      .then(res => res.json())
-      .then(data => {
-        this.cachedGeoJson = data;
-        this.renderGeoJson(data);
-      })
-      .catch(err => console.error('Error loading JSON:', err));
+      .then(r => r.json())
+      .then(data => { this.cachedGeoJson = data; this.renderGeoJson(data); })
+      .catch(err => console.error('GeoJSON load error:', err));
   }
 
   private renderGeoJson(data: any): void {
-    if (!this.map) return;
-
     L.geoJSON(data, {
-      style: (feature) => {
-        const code = feature?.properties?.['ISO3166-1-Alpha-3'] ?? '';
-        let continent = 'Other';
-
-        if (EUROPE_CODES.includes(code)) continent = 'Europe';
-        else if (ASIA_CODES.includes(code)) continent = 'Asia';
-        else if (AFRICA_CODES.includes(code)) continent = 'Africa';
-
-        return {
-          fillColor: CONTINENT_COLORS[continent],
-          fillOpacity: 0.6,
-          color: 'white',
-          weight: 1,
-          smoothFactor: 1.9
-        };
+      style: f => {
+        const code = f?.properties?.['ISO3166-1-Alpha-3'] ?? '';
+        const continent = EUROPE_CODES.includes(code) ? 'Europe'
+          : ASIA_CODES.includes(code) ? 'Asia'
+            : AFRICA_CODES.includes(code) ? 'Africa' : 'Other';
+        return { fillColor: CONTINENT_COLORS[continent], fillOpacity: 0.55, color: '#fff', weight: 0.8, smoothFactor: 1.5 };
       }
     }).addTo(this.map);
   }
 
-  private addAlgaeMarkers(): void {
-    if (!this.map) return;
+  // Interactions 
+  onHexHover(index: number, on: boolean): void {
+    this.activeIndex = on ? index : null;
+  }
 
-    ALGAE_LIST.forEach(algae => {
-      L.marker(algae.coords)
-        .addTo(this.map!)
-        .bindPopup(this.buildAlgaePopup(algae));
+  onHexClick(partner: ProcessedPartner): void {
+    this.popupPartner = null;
+    this.selectedAlgae = null;
+
+    this.map.flyTo(partner.coords as L.LatLngExpression, 7, {
+      duration: 1.2, easeLinearity: 0.2
     });
+
+    // Show popup after fly animation ends but only if partner has algaeInfo
+    if (partner.algaeInfo) {
+      const onEnd = () => {
+        this.map.off('moveend', onEnd);
+        this.zone.run(() => {
+          this.popupPartner = partner as ProcessedPartner & { algaeInfo: AlgaeInfo };
+          this.selectedAlgae = this.popupPartner.algaeInfo[0];
+          this.cdr.detectChanges();
+        });
+      };
+      this.map.once('moveend', onEnd);
+    }
   }
 
-  private addPartnerMarkers(): void {
-    if (!this.map) return;
-
-    PARTNER_LIST.forEach(partner => {
-      const partnerIcon = L.divIcon({
-        className: 'custom-partner-icon',
-        html: `
-          <div class="partner-marker-content">
-            <div class="partner-hexagon-shadow">
-              <div class="partner-hexagon-wrapper">
-                <div class="inner-hexagon">
-                  <img class="partner-logo-img" src="${partner.logo}" alt="logo">
-                </div>
-              </div>
-            </div>
-            <div class="partner-line"></div>
-            <div class="partner-dot"></div>
-          </div>
-        `,
-        iconSize: [80, 110],
-        iconAnchor: [40, 110],
-        popupAnchor: [0, -105]
-      });
-
-      L.marker(partner.coords, { icon: partnerIcon })
-        .addTo(this.map!)
-        .bindPopup(this.buildPartnerPopup(partner));
-    });
+  closePopup(): void {
+    this.popupPartner = null;
+    this.selectedAlgae = null;
   }
-
-  private buildAlgaePopup(algae: AlgaeData): string {
-    const items = algae.properties.map(p => `<li>${p}</li>`).join('');
-    return `
-      <div style="font-family: sans-serif; min-width: 200px;">
-        <b style="color: #2c3e50; font-size: 1.1em;">${algae.name}</b><br>
-        <i style="color: #7f8c8d;">${algae.scientificName}</i><br>
-        <small>Type: ${algae.type}</small>
-        <hr style="margin: 8px 0; border: 0; border-top: 1px solid #ddd;">
-        <ul style="margin: 0; padding-left: 18px; font-size: 0.9em;">
-          ${items}
-        </ul>
-      </div>
-    `;
-  }
-  private buildPartnerPopup(partner: PartnerData): string {
-    return `
-      <div style="font-family: sans-serif; min-width: 200px;">
-        <b style="color: #2c3e50; font-size: 1.1em;">${partner.name}</b><br>
-        <i style="color: #7f8c8d;">${partner.url}</i><br>
-        <small>Type: ${partner.coords}</small>
-        <hr style="margin: 8px 0; border: 0; border-top: 1px solid #ddd;">
-      </div>
-    `;
+  selectAlgae(algae: AlgaeInfo): void {
+    this.selectedAlgae = algae;
   }
 }
