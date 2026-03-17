@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 import { PARTNER_LIST, PartnerData, AlgaeInfo } from './app.data';
 
-// Map colours 
+// Map colours
 const EUROPE_CODES = ['ALB', 'AND', 'AUT', 'BEL', 'BGR', 'BIH', 'BLR', 'CHE', 'CYP', 'CZE', 'DEU', 'DNK', 'ESP', 'EST', 'FIN', 'FRA', 'GBR', 'GRC', 'HRV', 'HUN', 'IRL', 'ISL', 'ISR', 'ITA', 'LIE', 'LTU', 'LUX', 'LVA', 'MDA', 'MKD', 'MLT', 'MNE', 'NLD', 'NOR', 'POL', 'PRT', 'ROU', 'RUS', 'SVK', 'SVN', 'SWE', 'TUR', 'UKR', 'VAT'];
 const ASIA_CODES = ['AFG', 'ARM', 'AZE', 'BGD', 'BHR', 'BRN', 'BTN', 'CHN', 'GEO', 'IDN', 'IND', 'IRN', 'IRQ', 'JOR', 'JPN', 'KAZ', 'KGZ', 'KHM', 'KOR', 'KWT', 'LAO', 'LBN', 'LKA', 'MMR', 'MNG', 'MYS', 'NPL', 'OMN', 'PAK', 'PHL', 'PSE', 'QAT', 'SAU', 'SGP', 'SYR', 'THA', 'TJK', 'TKM', 'TLS', 'UZB', 'VNM', 'YEM'];
 const AFRICA_CODES = ['AGO', 'BDI', 'BEN', 'BFA', 'BWA', 'CAF', 'CIV', 'CMR', 'COD', 'COG', 'COM', 'CPV', 'DJI', 'DZA', 'EGY', 'ERI', 'ETH', 'GAB', 'GHA', 'GIN', 'GMB', 'GNB', 'GNQ', 'KEN', 'LBR', 'LBY', 'LSO', 'MAR', 'MDG', 'MLI', 'MOZ', 'MRT', 'MUS', 'MWI', 'NAM', 'NER', 'NGA', 'RWA', 'SDN', 'SEN', 'SLE', 'SOM', 'SSD', 'STP', 'SWZ', 'SYC', 'TCD', 'TGO', 'TUN', 'TZA', 'UGA', 'ZAF', 'ZMB', 'ZWE'];
@@ -22,39 +22,39 @@ const MIN_LOGO_DIST = 84;
 const EDGE_PAD = 48;
 
 const SEED_POSITIONS_PCT: Array<{ x: number; y: number }> = [
-  //  0 CCMAR   
+  //  0 CCMAR
   { x: 4, y: 58 },
-  //  1 IMG      
+  //  1 IMG
   { x: 35, y: 30 },
-  //  2 NORD     
+  //  2 NORD
   { x: 22, y: 20 },
-  //  3 ESCI    
+  //  3 ESCI
   { x: 35, y: 23 },
-  //  4 MIGAL    
+  //  4 MIGAL
   { x: 42, y: 59 },
-  //  5 ALGAIA  
+  //  5 ALGAIA
   { x: 7, y: 51 },
-  //  6 BRC     
+  //  6 BRC
   { x: 37, y: 51 },
-  //  7 ELOOP   
+  //  7 ELOOP
   { x: 23, y: 83 },
-  //  8 IRCCS   
+  //  8 IRCCS
   { x: 33, y: 61 },
-  //  9 MBU      
+  //  9 MBU
   { x: 39, y: 41 },
-  // 10 NECTON   
+  // 10 NECTON
   { x: 4, y: 71 },
-  // 11 SOLARIS  
+  // 11 SOLARIS
   { x: 30, y: 72 },
-  // 12 SYNOVO   
+  // 12 SYNOVO
   { x: 6, y: 40 },
-  // 13 TEAGASC  
+  // 13 TEAGASC
   { x: 9, y: 31 },
-  // 14 UNINA    
+  // 14 UNINA
   { x: 18, y: 76 },
-  // 15 VITO    
+  // 15 VITO
   { x: 15, y: 26 },
-  // 16 YEMOJA   
+  // 16 YEMOJA
   { x: 42, y: 72 },
 ];
 
@@ -82,7 +82,13 @@ export class App implements OnInit, AfterViewInit {
 
   private map!: L.Map;
   private cachedGeoJson: any = null;
-  private rafId: number | null = null;
+
+  // Two separate RAF slots so silent and full recalcs don't cancel each other
+  private rafIdSilent: number | null = null;
+  private rafIdFull: number | null = null;
+
+  // Track last zoom so collision resolution is skipped during pure panning
+  private lastZoom = -1;
 
   public processedPartners: ProcessedPartner[] = [];
   public activeIndex: number | null = null;
@@ -91,10 +97,12 @@ export class App implements OnInit, AfterViewInit {
 
   constructor(private cdr: ChangeDetectorRef, private zone: NgZone) { }
 
-  //Lifecycle 
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+
   ngOnInit(): void {
     this.processedPartners = PARTNER_LIST.map((p, i) => ({
-      ...p, logoX: -500, logoY: -500,
+      ...p,
+      logoX: -500, logoY: -500,
       transformStr: `translate3d(-500px, -500px, 0) translate(-50%, -50%)`,
       dotX: 0, dotY: 0,
       linePath: '', offScreen: false, index: i
@@ -105,11 +113,19 @@ export class App implements OnInit, AfterViewInit {
     this.zone.runOutsideAngular(() => {
       this.initMap();
 
+      // whenReady fires once the map container is sized and tiles have started
+      // loading — no setTimeout needed here
       this.map.whenReady(() => {
-        setTimeout(() => this.recalculate(), 100);
+        this.map.invalidateSize();
+        this.recalculate();
       });
 
-      this.map.on('move zoom moveend zoomend', () => this.scheduleRecalc());
+      // During pan/zoom animation: update dot positions and line paths only,
+      // no Angular change detection (logos stay fixed while panning)
+      this.map.on('move zoom', () => this.scheduleRecalcSilent());
+
+      // Animation finished: run full recalc + trigger one CD cycle
+      this.map.on('moveend zoomend', () => this.scheduleRecalcFull());
     });
   }
 
@@ -121,7 +137,8 @@ export class App implements OnInit, AfterViewInit {
     });
   }
 
-  // Map init 
+  // ── Map init ──────────────────────────────────────────────────────────────
+
   private initMap(): void {
     this.map = L.map('map', {
       renderer: L.canvas({ tolerance: 3 }),
@@ -133,10 +150,12 @@ export class App implements OnInit, AfterViewInit {
     }).fitBounds(REGION_BOUNDS);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+      detectRetina: false,
       attribution: '© OpenStreetMap contributors © CARTO'
     }).addTo(this.map);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+      detectRetina: false,
       pane: 'shadowPane'
     }).addTo(this.map);
 
@@ -149,24 +168,78 @@ export class App implements OnInit, AfterViewInit {
         weight: 2.5, fillOpacity: 1, interactive: false
       }).addTo(this.map);
     });
-
-    setTimeout(() => this.map?.invalidateSize(), 100);
   }
 
   resetZoom(): void {
     this.map.flyToBounds(REGION_BOUNDS, { duration: 0.6 });
   }
 
-  // Position engine 
-  private scheduleRecalc(): void {
-    if (this.rafId !== null) return;
-    this.rafId = requestAnimationFrame(() => {
-      this.rafId = null;
+  // ── Position engine ───────────────────────────────────────────────────────
+
+  // Called during animation — updates dot/line geometry, NO change detection.
+  // Logos appear to stay in place while the map pans underneath.
+  private scheduleRecalcSilent(): void {
+    if (this.rafIdSilent !== null) return;
+    this.rafIdSilent = requestAnimationFrame(() => {
+      this.rafIdSilent = null;
+      this.recalculateGeometry(false);
+    });
+  }
+
+  // Called when animation ends — full recalc including logo repositioning,
+  // then one cdr.detectChanges() to push new transformStr/linePath to the DOM.
+  private scheduleRecalcFull(): void {
+    if (this.rafIdFull !== null) return;
+    this.rafIdFull = requestAnimationFrame(() => {
+      this.rafIdFull = null;
       this.recalculate();
     });
   }
 
+  // Full recalc: logo positions + collision + geometry + CD.
+  // Used on: initial load, moveend/zoomend, resize.
   private recalculate(): void {
+    if (!this.map) return;
+    const el = this.mapWrapper.nativeElement as HTMLElement;
+    const W = el.clientWidth;
+    const H = el.clientHeight;
+    if (!W || !H) return;
+
+    const currentZoom = this.map.getZoom();
+    const zoomChanged = currentZoom !== this.lastZoom;
+
+    // Always update dot screen positions (they track lat/lng on the map)
+    for (const p of this.processedPartners) {
+      const pt = this.map.latLngToContainerPoint(p.coords as L.LatLngExpression);
+      p.dotX = pt.x;
+      p.dotY = pt.y;
+    }
+
+    // Logo seed positions and collision resolution are zoom-dependent only.
+    // Skipping this during pure panning saves ~2040 iterations per moveend.
+    if (zoomChanged) {
+      this.lastZoom = currentZoom;
+      this.recalculateLogoPositions(W, H);
+      this.resolveCollisions(15);
+    }
+
+    // Clamp logos to viewport edges and rebuild transform + bezier path strings
+    for (const p of this.processedPartners) {
+      p.logoX = Math.max(EDGE_PAD, Math.min(W - EDGE_PAD, p.logoX));
+      p.logoY = Math.max(EDGE_PAD, Math.min(H - EDGE_PAD, p.logoY));
+      p.transformStr = `translate3d(${p.logoX}px, ${p.logoY}px, 0) translate(-50%, -50%)`;
+      const cpX = (p.dotX + p.logoX) * 0.5;
+      const cpY = (p.dotY + p.logoY) * 0.5 - 28;
+      p.linePath = `M ${p.dotX} ${p.dotY} Q ${cpX} ${cpY} ${p.logoX} ${p.logoY}`;
+    }
+
+    // Single CD cycle to flush all changes to the DOM at once
+    this.cdr.detectChanges();
+  }
+
+  // Silent geometry update during pan animation — skips CD entirely.
+  // Only updates the bezier line paths so lines follow the moving map.
+  private recalculateGeometry(triggerCD: boolean): void {
     if (!this.map) return;
     const el = this.mapWrapper.nativeElement as HTMLElement;
     const W = el.clientWidth;
@@ -177,11 +250,24 @@ export class App implements OnInit, AfterViewInit {
       const pt = this.map.latLngToContainerPoint(p.coords as L.LatLngExpression);
       p.dotX = pt.x;
       p.dotY = pt.y;
+
+      const cpX = (p.dotX + p.logoX) * 0.5;
+      const cpY = (p.dotY + p.logoY) * 0.5 - 28;
+      p.linePath = `M ${p.dotX} ${p.dotY} Q ${cpX} ${cpY} ${p.logoX} ${p.logoY}`;
     }
 
+    if (triggerCD) {
+      this.cdr.detectChanges();
+    }
+  }
+
+  // Assign initial logo screen positions from percentage seeds.
+  // Off-screen dots are clamped to the nearest viewport edge instead.
+  private recalculateLogoPositions(W: number, H: number): void {
     for (let i = 0; i < this.processedPartners.length; i++) {
       const p = this.processedPartners[i];
-      const dotInView = p.dotX > -HEX_W && p.dotX < W + HEX_W && p.dotY > -HEX_H && p.dotY < H + HEX_H;
+      const dotInView = p.dotX > -HEX_W && p.dotX < W + HEX_W
+        && p.dotY > -HEX_H && p.dotY < H + HEX_H;
 
       if (!dotInView) {
         p.offScreen = true;
@@ -194,21 +280,10 @@ export class App implements OnInit, AfterViewInit {
         p.logoY = (seed.y / 100) * H;
       }
     }
-
-    this.resolveCollisions(15);
-
-    for (const p of this.processedPartners) {
-      p.logoX = Math.max(EDGE_PAD, Math.min(W - EDGE_PAD, p.logoX));
-      p.logoY = Math.max(EDGE_PAD, Math.min(H - EDGE_PAD, p.logoY));
-      p.transformStr = `translate3d(${p.logoX}px, ${p.logoY}px, 0) translate(-50%, -50%)`;
-      const cpX = (p.dotX + p.logoX) * 0.5;
-      const cpY = (p.dotY + p.logoY) * 0.5 - 28;
-      p.linePath = `M ${p.dotX} ${p.dotY} Q ${cpX} ${cpY} ${p.logoX} ${p.logoY}`;
-    }
-
-    this.cdr.detectChanges();
   }
 
+  // Push overlapping logos apart using iterative spring relaxation.
+  // Only runs on zoom change — not on every pan frame.
   private resolveCollisions(iterations: number): void {
     const minDistSq = MIN_LOGO_DIST * MIN_LOGO_DIST;
     for (let iter = 0; iter < iterations; iter++) {
@@ -225,6 +300,7 @@ export class App implements OnInit, AfterViewInit {
             const push = (MIN_LOGO_DIST - dist) / 2;
             const nx = dx / dist;
             const ny = dy / dist;
+            // Off-screen logos move less so they stay near their clamped edge
             const wa = a.offScreen ? 0.3 : 0.5;
             const wb = b.offScreen ? 0.3 : 0.5;
             a.logoX -= nx * push * wa * 2;
@@ -237,7 +313,8 @@ export class App implements OnInit, AfterViewInit {
     }
   }
 
-  // GeoJSON 
+  // ── GeoJSON ───────────────────────────────────────────────────────────────
+
   private loadCountries(): void {
     if (this.cachedGeoJson) { this.renderGeoJson(this.cachedGeoJson); return; }
     fetch('/assets/countries.json')
@@ -267,7 +344,8 @@ export class App implements OnInit, AfterViewInit {
     }).addTo(this.map);
   }
 
-  // Interactions 
+  // ── Interactions ──────────────────────────────────────────────────────────
+
   onHexHover(index: number, on: boolean): void {
     this.activeIndex = on ? index : null;
   }
@@ -295,6 +373,7 @@ export class App implements OnInit, AfterViewInit {
     this.popupPartner = null;
     this.selectedAlgae = null;
   }
+
   selectAlgae(algae: AlgaeInfo): void {
     this.selectedAlgae = algae;
   }
