@@ -1,5 +1,12 @@
 
-export interface AlgaeInfo {
+export interface MacroAlgaeInfo {
+    name: string;
+    place: string;
+    country: string;
+    type: string;
+    properties: string[];
+}
+export interface MicroAlgaeInfo {
     name: string;
     place: string;
     country: string;
@@ -7,45 +14,46 @@ export interface AlgaeInfo {
     properties: string[];
 }
 
-export interface PartnerData {
+export interface PopUpData {
     name: string;
     logo: string;
-    url: string;
     coords: L.LatLngExpression;
-    algaeInfo?: AlgaeInfo[];
+    macroAlgae?: MacroAlgaeInfo[];
+    microAlgae?: MicroAlgaeInfo[];
+    partnerList: string[];
 }
 
-export const PARTNER_LIST: PartnerData[] = [
+export const PARTNER_LIST: PopUpData[] = [
     {
         name: 'CCMAR',
         logo: 'assets/logos/CCMAR.webp',
-        url: 'https://ccmar.ualg.pt/',
-        coords: [37.0432, -7.9733]
+        coords: [37.0432, -7.9733],
+        partnerList: ['CCMAR', 'NECTON']
     },
     {
         name: 'IMG',
         logo: 'assets/logos/IMG.webp',
-        url: 'https://www.openscreen.cz/',
-        coords: [50.0125, 14.4649]
+        coords: [50.0125, 14.4649],
+        partnerList: ['CCMAR', 'NECTON']
     },
     {
         name: 'NORD',
         logo: 'assets/logos/NORD.webp',
-        url: 'https://www.nord.no/',
-        coords: [67.2892, 14.3912]
+        coords: [67.2892, 14.3912],
+        partnerList: ['CCMAR', 'NECTON']
     },
     {
         name: 'ESCI',
         logo: 'assets/logos/ESCI.webp',
-        url: 'https://www.esci.eu/',
-        coords: [53.1415, 8.2045]
+        coords: [53.1415, 8.2045],
+        partnerList: ['CCMAR', 'NECTON']
     },
     {
         name: 'MIGAL',
         logo: 'assets/logos/MIGAL.webp',
-        url: 'https://www.migal.org.il/en',
         coords: [33.2064, 35.5711],
-        algaeInfo: [
+        partnerList: ['CCMAR', 'NECTON'],
+        macroAlgae: [
             {
                 name: 'Nori',
                 place: 'Porphyra',
@@ -62,9 +70,8 @@ export const PARTNER_LIST: PartnerData[] = [
     {
         name: 'Algaia',
         logo: 'assets/logos/AscophyllumNodosum.jpg',
-        url: 'https://www.algaia.com/en/',
         coords: [49.1114, -1.0664],
-        algaeInfo: [
+        macroAlgae: [
             {
                 name: 'Ascophyllum nodosum',
                 place: 'Brittany',
@@ -131,73 +138,87 @@ export const PARTNER_LIST: PartnerData[] = [
                     'Wrapping sushi rolls.'
                 ]
             }
-        ]
+        ],
+        microAlgae: [
+            {
+                name: 'Nori',
+                place: 'Porphyra',
+                country: 'Red Algae',
+                type: 'red',
+                properties: [
+                    'High protein, Vitamins A, B12, C.',
+                    'Thin, papery, becomes chewy when hydrated.',
+                    'Wrapping sushi rolls.'
+                ]
+            }
+        ],
+        partnerList: ['CCMAR', 'NECTON']
     }
     ,
     {
         name: 'BRC',
         logo: 'assets/logos/BRC.webp',
-        url: 'https://www.brc.hu/en',
-        coords: [46.2486, 20.1471]
+        coords: [46.2486, 20.1471],
+        partnerList: ['CCMAR', 'NECTON']
     },
     {
         name: 'ELOOP',
         logo: 'assets/logos/ELOOP.webp',
-        url: 'https://www.eloop.it/',
-        coords: [40.8358, 14.2487]
+        coords: [40.8358, 14.2487],
+        partnerList: ['CCMAR', 'NECTON']
     },
     {
         name: 'IRCCS',
         logo: 'assets/logos/IRCCS.webp',
-        url: 'https://www.hsr.it/',
-        coords: [45.5050, 9.2654]
+        coords: [45.5050, 9.2654],
+        partnerList: ['CCMAR', 'NECTON']
     },
     {
         name: 'MBU',
         logo: 'assets/logos/MBU.webp',
-        url: 'https://mbu.cas.cz/en',
-        coords: [50.0138, 14.4647]
+        coords: [50.0138, 14.4647],
+        partnerList: ['CCMAR', 'NECTON']
     },
     {
         name: 'NECTON',
         logo: 'assets/logos/NECTON.webp',
-        url: 'https://phytobloom.com/',
-        coords: [37.0396, -7.8340]
+        coords: [37.0396, -7.8340],
+        partnerList: ['CCMAR', 'NECTON']
     },
     {
         name: 'SOLARIS',
         logo: 'assets/logos/SOLARIS.webp',
-        url: 'https://www.solarisbiotech.com/en/bioreactors-fermentors',
-        coords: [45.1950, 10.7954]
+        coords: [45.1950, 10.7954],
+        partnerList: ['CCMAR', 'NECTON']
     },
     {
         name: 'SYNOVO',
         logo: 'assets/logos/SYNOVO.webp',
-        url: 'https://synovo.com/',
-        coords: [48.5369, 9.0401]
+        coords: [48.5369, 9.0401],
+        partnerList: ['CCMAR', 'NECTON']
     },
     {
         name: 'TEAGASC',
         logo: 'assets/logos/TEAGASC.webp',
-        url: 'https://teagasc.ie/',
-        coords: [52.8624, -6.9158]
+        coords: [52.8624, -6.9158],
+        partnerList: ['CCMAR', 'NECTON']
     },
     {
         name: 'UNINA',
         logo: 'assets/logos/UNINA.webp',
-        url: 'https://www.unina.it/it/',
-        coords: [40.8469, 14.2583]
+        coords: [40.8469, 14.2583],
+        partnerList: ['CCMAR', 'NECTON']
     },
     {
         name: 'VITO',
         logo: 'assets/logos/VITO.webp',
-        url: 'https://vito.be/nl',
-        coords: [51.2185, 5.0906]
+        coords: [51.2185, 5.0906],
+        partnerList: ['CCMAR', 'NECTON']
     },
     {
         name: 'YEMOJA',
         logo: 'assets/logos/YEMOJA.webp',
-        url: '',
-        coords: [33.15, 35.65]
+        coords: [33.15, 35.65],
+        partnerList: ['CCMAR', 'NECTON']
     }
 ];

@@ -19,8 +19,6 @@
   z-index: 1;
 }
 
-
-
 /* Reset Zoom Button */
 .reset-zoom-btn {
   position: absolute;
@@ -155,6 +153,14 @@
   outline: none;
   transition: background-color 0.08s linear, border-color 0.08s linear, color 0.08s linear;
   will-change: background-color;
+}
+
+.algaeSide-btns {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
 }
 
 @keyframes fadeIn {

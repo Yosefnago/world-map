@@ -15,14 +15,14 @@
   </button>
 
   <!-- Partner Info Popup — appears after flyTo ends, only when algaeInfo is present -->
-  @if (popupPartner && selectedAlgae) {
+  @if (selectedAlgae) {
   <div class="popup-backdrop" (click)="closePopup()"></div>
   <div class="popup-container">
     <div class="partner-popup">
       <div class="popup-header">
-        <img [src]="popupPartner.logo" [alt]="popupPartner.name" class="popup-logo" width="64" height="64">
+        <img src="/src/assets/logos/algae4IBD.png" alt="algae4IBD" class="popup-logo" width="64" height="64">
         <div class="popup-header-text">
-          <span class="popup-partner-name">{{ popupPartner.name }}</span>
+
           <em class="popup-algae-name">{{ selectedAlgae.name }}</em>
           <em class="popup-scientific">{{ selectedAlgae.place }}</em>
         </div>
@@ -36,13 +36,8 @@
       </div>
 
       <div class="popup-badges-container">
-        @if (selectedAlgae.country) {
         <div class="popup-type-country">{{ selectedAlgae.country }}</div>
-        }
-
-        @if (selectedAlgae.type) {
         <div class="popup-type-badge">{{ selectedAlgae.type }}</div>
-        }
       </div>
       <ul class="popup-properties">
         @for (prop of selectedAlgae.properties; track prop) {
@@ -52,11 +47,29 @@
     </div>
 
     <div class="algaeSide">
-      @for (item of popupPartner.algaeInfo; track $index) {
-      <button class="algaeSide-btn" [class.selected]="selectedAlgae === item" (click)="selectAlgae(item)">
-        {{item.name}}
-      </button>
+      <button class="algaeSide-btn" (click)="goBack()">Back</button>
+
+      @if (!selectedAlgaeType) {
+      <button class="algaeSide-btn" (click)="chossedAlgaeType('macro')">Macro Algae</button>
+      <button class="algaeSide-btn" (click)="chossedAlgaeType('micro')">Micro Algae</button>
       }
+
+      <div class="algaeSide-btns">
+        @if (selectedAlgaeType === 'macro') {
+        @for (item of popupPartner?.macroAlgae; track $index) {
+        <button class="algaeSide-btn" [class.selected]="selectedAlgae === item" (click)="selectAlgae(item)">
+          {{item.name}}
+        </button>
+        }
+        }
+        @if (selectedAlgaeType === 'micro') {
+        @for (item of popupPartner?.microAlgae; track $index) {
+        <button class="algaeSide-btn" [class.selected]="selectedAlgae === item" (click)="selectAlgae(item)">
+          {{item.name}}
+        </button>
+        }
+        }
+      </div>
     </div>
   </div>
   }
@@ -66,4 +79,3 @@
       @Yosef Nago
     </a>
   </footer>
-</div>
