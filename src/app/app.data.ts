@@ -61,7 +61,7 @@ export const PARTNER_LIST: PartnerData[] = [
     },
     {
         name: 'Algaia',
-        logo: 'assets/logos/ALGAIA.webp',
+        logo: 'assets/logos/AscophyllumNodosum.jpg',
         url: 'https://www.algaia.com/en/',
         coords: [49.1114, -1.0664],
         algaeInfo: [
