@@ -3,40 +3,6 @@
   <!-- Leaflet Map -->
   <div id="map"></div>
 
-  <svg class="line-overlay" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
-        <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-        <feMerge>
-          <feMergeNode in="coloredBlur" />
-          <feMergeNode in="SourceGraphic" />
-        </feMerge>
-      </filter>
-    </defs>
-
-    @for (p of processedPartners; track p.name) {
-    <path [attr.d]="p.linePath" class="connection-line" [class.active]="activeIndex === p.index" />
-    }
-  </svg>
-
-  <!-- Hex Logo Layer -->
-  <div class="logos-layer">
-    @for (p of processedPartners; track p.name) {
-    <div class="hex-logo" [class.active]="activeIndex === p.index" [class.off-screen]="p.offScreen"
-      [style.transform]="p.transformStr" (mouseenter)="onHexHover(p.index, true)"
-      (mouseleave)="onHexHover(p.index, false)" (click)="onHexClick(p)">
-      <div class="hex-outer">
-        <div class="hex-inner">
-          <img [src]="p.logo" [alt]="p.name" loading="lazy" decoding="async">
-        </div>
-      </div>
-      <div class="hex-tooltip">
-        <span class="tooltip-name">{{ p.name }}</span>
-        <span class="tooltip-hint">Click for details</span>
-      </div>
-    </div>
-    }
-  </div>
 
   <!-- Reset Zoom Button (top-right) -->
   <button class="reset-zoom-btn" (click)="resetZoom()" title="Reset zoom">
