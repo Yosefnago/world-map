@@ -3,7 +3,6 @@
   <!-- Leaflet Map -->
   <div id="map"></div>
 
-  <!-- SVG Layer: bezier connection lines from dot to logo -->
   <svg class="line-overlay" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
@@ -28,7 +27,7 @@
       (mouseleave)="onHexHover(p.index, false)" (click)="onHexClick(p)">
       <div class="hex-outer">
         <div class="hex-inner">
-          <img [src]="p.logo" [alt]="p.name" loading="lazy">
+          <img [src]="p.logo" [alt]="p.name" loading="lazy" width="50" height="50" decoding="async">
         </div>
       </div>
       <div class="hex-tooltip">
@@ -55,7 +54,7 @@
   <div class="popup-container">
     <div class="partner-popup">
       <div class="popup-header">
-        <img [src]="popupPartner.logo" [alt]="popupPartner.name" class="popup-logo">
+        <img [src]="popupPartner.logo" [alt]="popupPartner.name" class="popup-logo" width="64" height="64">
         <div class="popup-header-text">
           <span class="popup-partner-name">{{ popupPartner.name }}</span>
           <em class="popup-algae-name">{{ selectedAlgae.name }}</em>

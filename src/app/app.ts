@@ -83,11 +83,9 @@ export class App implements OnInit, AfterViewInit {
   private map!: L.Map;
   private cachedGeoJson: any = null;
 
-  // Two separate RAF slots so silent and full recalcs don't cancel each other
   private rafIdSilent: number | null = null;
   private rafIdFull: number | null = null;
 
-  // Track last zoom so collision resolution is skipped during pure panning
   private lastZoom = -1;
 
   public processedPartners: ProcessedPartner[] = [];
@@ -97,8 +95,7 @@ export class App implements OnInit, AfterViewInit {
 
   constructor(private cdr: ChangeDetectorRef, private zone: NgZone) { }
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
-
+  //  Lifecycle 
   ngOnInit(): void {
     this.processedPartners = PARTNER_LIST.map((p, i) => ({
       ...p,
@@ -112,19 +109,13 @@ export class App implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.zone.runOutsideAngular(() => {
       this.initMap();
-
-      // whenReady fires once the map container is sized and tiles have started
-      // loading — no setTimeout needed here
       this.map.whenReady(() => {
         this.map.invalidateSize();
         this.recalculate();
       });
 
-      // During pan/zoom animation: update dot positions and line paths only,
-      // no Angular change detection (logos stay fixed while panning)
       this.map.on('move zoom', () => this.scheduleRecalcSilent());
 
-      // Animation finished: run full recalc + trigger one CD cycle
       this.map.on('moveend zoomend', () => this.scheduleRecalcFull());
     });
   }
@@ -136,9 +127,7 @@ export class App implements OnInit, AfterViewInit {
       this.recalculate();
     });
   }
-
-  // ── Map init ──────────────────────────────────────────────────────────────
-
+  // Map init 
   private initMap(): void {
     this.map = L.map('map', {
       renderer: L.canvas({ tolerance: 3 }),
@@ -149,12 +138,12 @@ export class App implements OnInit, AfterViewInit {
       zoomControl: false
     }).fitBounds(REGION_BOUNDS);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
       detectRetina: false,
       attribution: '© OpenStreetMap contributors © CARTO'
     }).addTo(this.map);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png', {
       detectRetina: false,
       pane: 'shadowPane'
     }).addTo(this.map);
@@ -174,10 +163,7 @@ export class App implements OnInit, AfterViewInit {
     this.map.flyToBounds(REGION_BOUNDS, { duration: 0.6 });
   }
 
-  // ── Position engine ───────────────────────────────────────────────────────
-
-  // Called during animation — updates dot/line geometry, NO change detection.
-  // Logos appear to stay in place while the map pans underneath.
+  //Position engine 
   private scheduleRecalcSilent(): void {
     if (this.rafIdSilent !== null) return;
     this.rafIdSilent = requestAnimationFrame(() => {
@@ -186,8 +172,6 @@ export class App implements OnInit, AfterViewInit {
     });
   }
 
-  // Called when animation ends — full recalc including logo repositioning,
-  // then one cdr.detectChanges() to push new transformStr/linePath to the DOM.
   private scheduleRecalcFull(): void {
     if (this.rafIdFull !== null) return;
     this.rafIdFull = requestAnimationFrame(() => {
@@ -196,8 +180,6 @@ export class App implements OnInit, AfterViewInit {
     });
   }
 
-  // Full recalc: logo positions + collision + geometry + CD.
-  // Used on: initial load, moveend/zoomend, resize.
   private recalculate(): void {
     if (!this.map) return;
     const el = this.mapWrapper.nativeElement as HTMLElement;
@@ -208,22 +190,18 @@ export class App implements OnInit, AfterViewInit {
     const currentZoom = this.map.getZoom();
     const zoomChanged = currentZoom !== this.lastZoom;
 
-    // Always update dot screen positions (they track lat/lng on the map)
     for (const p of this.processedPartners) {
       const pt = this.map.latLngToContainerPoint(p.coords as L.LatLngExpression);
       p.dotX = pt.x;
       p.dotY = pt.y;
     }
 
-    // Logo seed positions and collision resolution are zoom-dependent only.
-    // Skipping this during pure panning saves ~2040 iterations per moveend.
     if (zoomChanged) {
       this.lastZoom = currentZoom;
       this.recalculateLogoPositions(W, H);
       this.resolveCollisions(15);
     }
 
-    // Clamp logos to viewport edges and rebuild transform + bezier path strings
     for (const p of this.processedPartners) {
       p.logoX = Math.max(EDGE_PAD, Math.min(W - EDGE_PAD, p.logoX));
       p.logoY = Math.max(EDGE_PAD, Math.min(H - EDGE_PAD, p.logoY));
@@ -233,12 +211,9 @@ export class App implements OnInit, AfterViewInit {
       p.linePath = `M ${p.dotX} ${p.dotY} Q ${cpX} ${cpY} ${p.logoX} ${p.logoY}`;
     }
 
-    // Single CD cycle to flush all changes to the DOM at once
     this.cdr.detectChanges();
   }
 
-  // Silent geometry update during pan animation — skips CD entirely.
-  // Only updates the bezier line paths so lines follow the moving map.
   private recalculateGeometry(triggerCD: boolean): void {
     if (!this.map) return;
     const el = this.mapWrapper.nativeElement as HTMLElement;
@@ -261,8 +236,6 @@ export class App implements OnInit, AfterViewInit {
     }
   }
 
-  // Assign initial logo screen positions from percentage seeds.
-  // Off-screen dots are clamped to the nearest viewport edge instead.
   private recalculateLogoPositions(W: number, H: number): void {
     for (let i = 0; i < this.processedPartners.length; i++) {
       const p = this.processedPartners[i];
@@ -282,8 +255,6 @@ export class App implements OnInit, AfterViewInit {
     }
   }
 
-  // Push overlapping logos apart using iterative spring relaxation.
-  // Only runs on zoom change — not on every pan frame.
   private resolveCollisions(iterations: number): void {
     const minDistSq = MIN_LOGO_DIST * MIN_LOGO_DIST;
     for (let iter = 0; iter < iterations; iter++) {
@@ -300,7 +271,6 @@ export class App implements OnInit, AfterViewInit {
             const push = (MIN_LOGO_DIST - dist) / 2;
             const nx = dx / dist;
             const ny = dy / dist;
-            // Off-screen logos move less so they stay near their clamped edge
             const wa = a.offScreen ? 0.3 : 0.5;
             const wb = b.offScreen ? 0.3 : 0.5;
             a.logoX -= nx * push * wa * 2;
@@ -313,8 +283,7 @@ export class App implements OnInit, AfterViewInit {
     }
   }
 
-  // ── GeoJSON ───────────────────────────────────────────────────────────────
-
+  // GeoJSON 
   private loadCountries(): void {
     if (this.cachedGeoJson) { this.renderGeoJson(this.cachedGeoJson); return; }
     fetch('/assets/countries.json')
@@ -344,7 +313,7 @@ export class App implements OnInit, AfterViewInit {
     }).addTo(this.map);
   }
 
-  // ── Interactions ──────────────────────────────────────────────────────────
+  // Interactions 
 
   onHexHover(index: number, on: boolean): void {
     this.activeIndex = on ? index : null;

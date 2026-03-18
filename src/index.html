@@ -8,32 +8,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
 
-  <!-- Preconnect to CARTO tile servers so the TCP+TLS handshake is done
-       before Leaflet requests the first map tile — shaves ~300ms off LCP.
-       Four subdomains (a–d) are used in round-robin by the {s} placeholder. -->
   <link rel="preconnect" href="https://a.basemaps.cartocdn.com" crossorigin>
   <link rel="preconnect" href="https://b.basemaps.cartocdn.com" crossorigin>
   <link rel="preconnect" href="https://c.basemaps.cartocdn.com" crossorigin>
   <link rel="preconnect" href="https://d.basemaps.cartocdn.com" crossorigin>
 
-  <!-- DNS-only fallback for browsers that don't support preconnect -->
   <link rel="dns-prefetch" href="https://a.basemaps.cartocdn.com">
   <link rel="dns-prefetch" href="https://b.basemaps.cartocdn.com">
   <link rel="dns-prefetch" href="https://c.basemaps.cartocdn.com">
   <link rel="dns-prefetch" href="https://d.basemaps.cartocdn.com">
 
-  <!-- Preload countries.json so it arrives before Angular bootstraps and
-       calls fetch('/assets/countries.json') — prevents a waterfall delay -->
   <link rel="preload" href="/assets/countries.json" as="fetch" crossorigin>
 </head>
 
 <body>
   <app-root></app-root>
-
-  <!-- Inline SVG defs: zero network cost, available immediately on parse,
-       no FOUC risk from an external SVG file -->
-  <svg width="0" height="0" style="position:absolute;pointer-events:none"
-       aria-hidden="true" focusable="false">
+  <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true" focusable="false">
     <defs>
       <clipPath id="hexagon-mask" clipPathUnits="objectBoundingBox">
         <polygon points="0.5 0, 1 0.25, 1 0.75, 0.5 1, 0 0.75, 0 0.25" />
