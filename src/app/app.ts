@@ -131,6 +131,7 @@ export class App implements OnInit, AfterViewInit {
   private initMap(): void {
     this.map = L.map('map', {
       renderer: L.canvas({ tolerance: 3 }),
+
       minZoom: 3, maxZoom: 12,
       zoomSnap: 0, zoomDelta: 1,
       maxBounds: REGION_BOUNDS,

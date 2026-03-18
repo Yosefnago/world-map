@@ -478,3 +478,14 @@
   background: #000;
   z-index: 1000;
 }
+
+.footer a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.footer a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
