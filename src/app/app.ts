@@ -77,9 +77,8 @@ export class App implements OnInit, AfterViewInit {
           </div>
         </div>
       `,
-      iconSize: [40, 40],
-      iconAnchor: [20, 48],
-      popupAnchor: [0, -50]
+      iconSize: [40, 48],
+      iconAnchor: [20, 48]
     });
 
     PARTNER_LIST.forEach(partner => {
