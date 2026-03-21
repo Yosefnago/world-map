@@ -14,38 +14,48 @@
     <span>Reset View</span>
   </button>
 
-  <!-- Partner Info Popup — appears after flyTo ends, only when algaeInfo is present -->
-  @if (selectedAlgae) {
+  <!-- Partner Info Popup - appears after flyTo ends, only when algaeInfo is present -->
+  @if (popupPartner) {
   <div class="popup-backdrop" (click)="closePopup()"></div>
   <div class="popup-container">
-    <div class="partner-popup">
-      <div class="popup-header">
-        <img src="/src/assets/logos/algae4IBD.png" alt="algae4IBD" class="popup-logo" width="64" height="64">
-        <div class="popup-header-text">
+    <button class="popup-close-corner" (click)="closePopup()" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
 
-          <em class="popup-algae-name">{{ selectedAlgae.name }}</em>
-          <em class="popup-scientific">{{ selectedAlgae.place }}</em>
+    <!-- Data panel - slides in when an algae is selected -->
+    <div class="partner-popup-wrapper" [class.visible]="selectedAlgae">
+      <div class="partner-popup">
+        @if (selectedAlgae) {
+        <div class="popup-header">
+          <div class="popup-header-text">
+            <em class="popup-algae-name">{{ selectedAlgae.name }}</em>
+            <em class="popup-scientific">{{ selectedAlgae.place }}</em>
+          </div>
+          <img src="{{ selectedAlgae.logo }}" alt="{{ selectedAlgae.name }}" class="popup-logo">
         </div>
-        <button class="popup-close" (click)="closePopup()" aria-label="Close">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
-      </div>
-
-      <div class="popup-badges-container">
-        <div class="popup-type-country">{{ selectedAlgae.country }}</div>
-        <div class="popup-type-badge">{{ selectedAlgae.type }}</div>
-      </div>
-      <ul class="popup-properties">
-        @for (prop of selectedAlgae.properties; track prop) {
-        <li>{{ prop }}</li>
+        <div class="popup-badges-container">
+          <div class="popup-type-country">{{ selectedAlgae.country }}</div>
+          <div class="popup-type-badge">{{ selectedAlgae.type }}</div>
+        </div>
+        <ul class="popup-properties">
+          @for (prop of selectedAlgae.properties; track prop) {
+          <li>{{ prop }}</li>
+          }
+        </ul>
         }
-      </ul>
+        <div class="popup-partner-list">
+          @for (item of selectedAlgae?.partnerList; track $index) {
+          <div class="popup-type-country-list">{{ item }}</div>
+          }
+        </div>
+      </div>
     </div>
 
+    <!-- Options panel - always visible while popup is open -->
     <div class="algaeSide">
       <button class="algaeSide-btn" (click)="goBack()">Back</button>
 
@@ -56,14 +66,14 @@
 
       <div class="algaeSide-btns">
         @if (selectedAlgaeType === 'macro') {
-        @for (item of popupPartner?.macroAlgae; track $index) {
+        @for (item of popupPartner.macroAlgae; track $index) {
         <button class="algaeSide-btn" [class.selected]="selectedAlgae === item" (click)="selectAlgae(item)">
           {{item.name}}
         </button>
         }
         }
         @if (selectedAlgaeType === 'micro') {
-        @for (item of popupPartner?.microAlgae; track $index) {
+        @for (item of popupPartner.microAlgae; track $index) {
         <button class="algaeSide-btn" [class.selected]="selectedAlgae === item" (click)="selectAlgae(item)">
           {{item.name}}
         </button>
@@ -71,6 +81,7 @@
         }
       </div>
     </div>
+
   </div>
   }
   <footer class="footer">

@@ -52,38 +52,29 @@ export class App implements OnInit, AfterViewInit {
   private initMap(): void {
     this.map = L.map('map', {
       renderer: L.canvas({ tolerance: 3 }),
-
       minZoom: 3.5, maxZoom: 15,
       zoomSnap: 0, zoomDelta: 1,
       maxBounds: REGION_BOUNDS,
       maxBoundsViscosity: 1.0,
       zoomControl: false
     }).fitBounds(REGION_BOUNDS);
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    });
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
       detectRetina: false,
       attribution: '© OpenStreetMap contributors © CARTO'
     }).addTo(this.map);
 
+
     this.loadCountries();
 
-    // Define a custom map pin with the Algae4IBD logo inside
-    const algaeIcon = L.divIcon({
-      className: 'custom-pin-wrapper',
-      html: `
-        <div class="css-pin">
-          <div class="css-pin-inner">
-            <img src="assets/logos/algae4IBD.png" alt="Algae4IBD">
-          </div>
-        </div>
-      `,
-      iconSize: [40, 48],
-      iconAnchor: [20, 48]
-    });
-
     PARTNER_LIST.forEach(partner => {
-      const marker = L.marker(partner.coords as L.LatLngExpression, { icon: algaeIcon }).addTo(this.map);
-
+      const marker = L.marker(partner.coords as L.LatLngExpression).addTo(this.map);
       marker.on('click', () => {
         this.zone.run(() => this.onPinClick(partner));
       });
@@ -93,6 +84,7 @@ export class App implements OnInit, AfterViewInit {
   resetZoom(): void {
     this.map.flyToBounds(REGION_BOUNDS, { duration: 0.6 });
   }
+
   // GeoJSON 
   private loadCountries(): void {
     if (this.cachedGeoJson) { this.renderGeoJson(this.cachedGeoJson); return; }
@@ -113,29 +105,24 @@ export class App implements OnInit, AfterViewInit {
         fillColor: "#2fc989ff",
         weight: 0.5,
         fillOpacity: 0.5
-      }
+      },
+      pointToLayer: (_feature, latlng) => L.marker(latlng)
     }).addTo(this.map);
   }
 
   // Interactions 
   onPinClick(popData: PopUpData): void {
+    this.map.flyTo(popData.coords as L.LatLngExpression, 12, { duration: 0.6, easeLinearity: 0.2 });
     this.popupPartner = popData as PopUpData & { macroAlgae: MacroAlgaeInfo[], microAlgae: MicroAlgaeInfo[] };
-
     this.selectedAlgaeType = '';
-
-    this.selectedAlgae = this.popupPartner.macroAlgae[0];
+    this.selectedAlgae = null;
     this.cdr.detectChanges();
-
-    // Fly to the pin smoothly
-    this.map.flyTo(popData.coords as L.LatLngExpression, 12, {
-      duration: 0.6, easeLinearity: 0.2
-    });
-
   }
 
   closePopup(): void {
     this.popupPartner = null;
     this.selectedAlgae = null;
+    this.selectedAlgaeType = '';
   }
 
   selectAlgae(algae: MacroAlgaeInfo | MicroAlgaeInfo): void {
@@ -148,6 +135,7 @@ export class App implements OnInit, AfterViewInit {
   goBack(): void {
     if (this.selectedAlgaeType !== '') {
       this.selectedAlgaeType = '';
+      this.selectedAlgae = null;
     } else {
       this.closePopup();
     }

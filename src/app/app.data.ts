@@ -1,61 +1,54 @@
 
 export interface MacroAlgaeInfo {
     name: string;
+    logo: string;
     place: string;
     country: string;
     type: string;
     properties: string[];
+    partnerList: string[];
+
 }
 export interface MicroAlgaeInfo {
     name: string;
+    logo: string;
     place: string;
     country: string;
     type: string;
     properties: string[];
+    partnerList: string[];
 }
 
 export interface PopUpData {
     name: string;
-    logo: string;
     coords: L.LatLngExpression;
     macroAlgae?: MacroAlgaeInfo[];
     microAlgae?: MicroAlgaeInfo[];
-    partnerList: string[];
 }
 
 export const PARTNER_LIST: PopUpData[] = [
     {
         name: 'CCMAR',
-        logo: 'assets/logos/CCMAR.webp',
-        coords: [37.0432, -7.9733],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [37.0432, -7.9733]
     },
     {
         name: 'IMG',
-        logo: 'assets/logos/IMG.webp',
-        coords: [50.0125, 14.4649],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [50.0125, 14.4649]
     },
     {
         name: 'NORD',
-        logo: 'assets/logos/NORD.webp',
-        coords: [67.2892, 14.3912],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [67.2892, 14.3912]
     },
     {
         name: 'ESCI',
-        logo: 'assets/logos/ESCI.webp',
-        coords: [53.1415, 8.2045],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [53.1415, 8.2045]
     },
     {
         name: 'MIGAL',
-        logo: 'assets/logos/MIGAL.webp',
         coords: [33.2064, 35.5711],
-        partnerList: ['CCMAR', 'NECTON'],
         macroAlgae: [
             {
-                name: 'Nori',
+                name: 'Nori', logo: 'assets/logos/CCMAR.webp',
                 place: 'Porphyra',
                 country: 'Red Algae',
                 type: 'red',
@@ -63,17 +56,18 @@ export const PARTNER_LIST: PopUpData[] = [
                     'High protein, Vitamins A, B12, C.',
                     'Thin, papery, becomes chewy when hydrated.',
                     'Wrapping sushi rolls.'
-                ]
+                ],
+                partnerList: ['CCMAR', 'NECTON']
             }
         ]
     },
     {
         name: 'Algaia',
-        logo: 'assets/logos/AscophyllumNodosum.jpg',
         coords: [49.1114, -1.0664],
         macroAlgae: [
             {
                 name: 'Ascophyllum nodosum',
+                logo: 'assets/logos/AscophyllumNodosum.jpg',
                 place: 'Brittany',
                 country: 'France',
                 type: 'MacroAlgae',
@@ -81,10 +75,12 @@ export const PARTNER_LIST: PopUpData[] = [
                     'High protein, Vitamins A, B12, C.',
                     'Thin, papery, becomes chewy when hydrated.',
                     'Wrapping sushi rolls.'
-                ]
+                ],
+                partnerList: ['CCMAR', 'NECTON']
             },
             {
                 name: 'Saccharina latissima',
+                logo: 'assets/logos/CCMAR.webp',
                 place: 'Brittany',
                 country: 'France',
                 type: 'MacroAlgae',
@@ -92,10 +88,12 @@ export const PARTNER_LIST: PopUpData[] = [
                     'High protein, Vitamins A, B12, C.',
                     'Thin, papery, becomes chewy when hydrated.',
                     'Wrapping sushi rolls.'
-                ]
+                ],
+                partnerList: ['CCMAR', 'NECTON']
             },
             {
                 name: 'Palmaria palmata',
+                logo: 'assets/logos/CCMAR.webp',
                 place: 'Brittany',
                 country: 'France',
                 type: 'MacroAlgae',
@@ -103,10 +101,12 @@ export const PARTNER_LIST: PopUpData[] = [
                     'High protein, Vitamins A, B12, C.',
                     'Thin, papery, becomes chewy when hydrated.',
                     'Wrapping sushi rolls.'
-                ]
+                ],
+                partnerList: ['CCMAR', 'NECTON']
             },
             {
                 name: 'Grateloupia turuturu',
+                logo: 'assets/logos/CCMAR.webp',
                 place: 'Brittany',
                 country: 'France',
                 type: 'MacroAlgae',
@@ -114,10 +114,12 @@ export const PARTNER_LIST: PopUpData[] = [
                     'High protein, Vitamins A, B12, C.',
                     'Thin, papery, becomes chewy when hydrated.',
                     'Wrapping sushi rolls.'
-                ]
+                ],
+                partnerList: ['CCMAR', 'NECTON']
             },
             {
                 name: 'Gelidium madagascariense',
+                logo: 'assets/logos/CCMAR.webp',
                 place: 'Madagascar',
                 country: 'Madagascar',
                 type: 'MacroAlgae',
@@ -125,10 +127,12 @@ export const PARTNER_LIST: PopUpData[] = [
                     'High protein, Vitamins A, B12, C.',
                     'Thin, papery, becomes chewy when hydrated.',
                     'Wrapping sushi rolls.'
-                ]
+                ],
+                partnerList: ['CCMAR', 'NECTON']
             },
             {
                 name: 'Macricystis pyrifera',
+                logo: 'assets/logos/CCMAR.webp',
                 place: 'Eastern Pacific',
                 country: 'Eastern Pacific',
                 type: 'MacroAlgae',
@@ -136,12 +140,14 @@ export const PARTNER_LIST: PopUpData[] = [
                     'High protein, Vitamins A, B12, C.',
                     'Thin, papery, becomes chewy when hydrated.',
                     'Wrapping sushi rolls.'
-                ]
+                ],
+                partnerList: ['CCMAR', 'NECTON']
             }
         ],
         microAlgae: [
             {
                 name: 'Nori',
+                logo: 'assets/logos/CCMAR.webp',
                 place: 'Porphyra',
                 country: 'Red Algae',
                 type: 'red',
@@ -149,76 +155,54 @@ export const PARTNER_LIST: PopUpData[] = [
                     'High protein, Vitamins A, B12, C.',
                     'Thin, papery, becomes chewy when hydrated.',
                     'Wrapping sushi rolls.'
-                ]
+                ],
+                partnerList: ['CCMAR', 'NECTON']
             }
         ],
-        partnerList: ['CCMAR', 'NECTON']
     }
     ,
     {
         name: 'BRC',
-        logo: 'assets/logos/BRC.webp',
-        coords: [46.2486, 20.1471],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [46.2486, 20.1471]
     },
     {
         name: 'ELOOP',
-        logo: 'assets/logos/ELOOP.webp',
-        coords: [40.8358, 14.2487],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [40.8358, 14.2487]
     },
     {
         name: 'IRCCS',
-        logo: 'assets/logos/IRCCS.webp',
-        coords: [45.5050, 9.2654],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [45.5050, 9.2654]
     },
     {
         name: 'MBU',
-        logo: 'assets/logos/MBU.webp',
-        coords: [50.0138, 14.4647],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [50.0138, 14.4647]
     },
     {
         name: 'NECTON',
-        logo: 'assets/logos/NECTON.webp',
-        coords: [37.0396, -7.8340],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [37.0396, -7.8340]
     },
     {
         name: 'SOLARIS',
-        logo: 'assets/logos/SOLARIS.webp',
-        coords: [45.1950, 10.7954],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [45.1950, 10.7954]
     },
     {
         name: 'SYNOVO',
-        logo: 'assets/logos/SYNOVO.webp',
-        coords: [48.5369, 9.0401],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [48.5369, 9.0401]
     },
     {
         name: 'TEAGASC',
-        logo: 'assets/logos/TEAGASC.webp',
-        coords: [52.8624, -6.9158],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [52.8624, -6.9158]
     },
     {
         name: 'UNINA',
-        logo: 'assets/logos/UNINA.webp',
-        coords: [40.8469, 14.2583],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [40.8469, 14.2583]
     },
     {
         name: 'VITO',
-        logo: 'assets/logos/VITO.webp',
-        coords: [51.2185, 5.0906],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [51.2185, 5.0906]
     },
     {
         name: 'YEMOJA',
-        logo: 'assets/logos/YEMOJA.webp',
-        coords: [33.15, 35.65],
-        partnerList: ['CCMAR', 'NECTON']
+        coords: [33.15, 35.65]
     }
 ];
