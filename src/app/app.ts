@@ -28,9 +28,38 @@ export class App implements OnInit, AfterViewInit {
   public selectedAlgae: MacroAlgaeInfo | MicroAlgaeInfo | null = null;
   public selectedAlgaeType: string = '';
 
+  public filterOpen: boolean = false;
+  public countries: string[] = [];
+  public properties: string[] = [];
+  public filteredResults: { country: string, type: string, name: string }[] = [];
+
+  private markers: L.Marker[] = [];
+
+  public selectedFilters = {
+    country: '' as string,
+    property: '' as string
+  };
+
   constructor(private cdr: ChangeDetectorRef, private zone: NgZone) { }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {
+    this.extractFilterOptions();
+  }
+  private extractFilterOptions(): void {
+    const countrySet = new Set<string>();
+    const propertySet = new Set<string>();
+
+    PARTNER_LIST.forEach(p => {
+      const allAlgae = [...(p.macroAlgae || []), ...(p.microAlgae || [])];
+      allAlgae.forEach(a => {
+        if (a.country) countrySet.add(a.country);
+        a.properties?.forEach(prop => propertySet.add(prop));
+      });
+    });
+
+    this.countries = Array.from(countrySet).sort();
+    this.properties = Array.from(propertySet).sort();
+  }
 
   ngAfterViewInit(): void {
     this.zone.runOutsideAngular(() => {
@@ -72,11 +101,51 @@ export class App implements OnInit, AfterViewInit {
 
 
     this.loadCountries();
+    this.renderMarkers();
+  }
+  renderMarkers(): void {
+    this.zone.runOutsideAngular(() => {
+      this.markers.forEach(m => m.remove());
+      this.markers = [];
+      const newResults: any[] = [];
 
-    PARTNER_LIST.forEach(partner => {
-      const marker = L.marker(partner.coords as L.LatLngExpression).addTo(this.map);
-      marker.on('click', () => {
-        this.zone.run(() => this.onPinClick(partner));
+      const isAnyFilterActive = !!(this.selectedFilters.country || this.selectedFilters.property);
+
+      PARTNER_LIST.forEach(partner => {
+        const allAlgae = [...(partner.macroAlgae || []), ...(partner.microAlgae || [])];
+
+        const matchesCountry = !this.selectedFilters.country ||
+          allAlgae.some(a => a.country === this.selectedFilters.country);
+
+        const matchesProperty = !this.selectedFilters.property ||
+          allAlgae.some(a => a.properties.includes(this.selectedFilters.property));
+
+        if (matchesCountry && matchesProperty) {
+          const marker = L.marker(partner.coords as L.LatLngExpression).addTo(this.map);
+          marker.on('click', () => {
+            this.zone.run(() => this.onPinClick(partner));
+          });
+          this.markers.push(marker);
+
+          if (isAnyFilterActive) {
+            allAlgae.forEach(algae => {
+              const mCountry = !this.selectedFilters.country || algae.country === this.selectedFilters.country;
+              const mProp = !this.selectedFilters.property || algae.properties.includes(this.selectedFilters.property);
+
+              if (mCountry && mProp) {
+                newResults.push({
+                  country: algae.country,
+                  type: algae.type,
+                  name: algae.name
+                });
+              }
+            });
+          }
+        }
+      });
+      this.zone.run(() => {
+        this.filteredResults = newResults;
+        this.cdr.detectChanges();
       });
     });
   }
@@ -88,7 +157,7 @@ export class App implements OnInit, AfterViewInit {
   // GeoJSON 
   private loadCountries(): void {
     if (this.cachedGeoJson) { this.renderGeoJson(this.cachedGeoJson); return; }
-    fetch('/assets/map.geojson')
+    fetch('assets/map.geojson')
       .then(r => r.json())
       .then(data => {
         this.cachedGeoJson = data;
@@ -139,5 +208,21 @@ export class App implements OnInit, AfterViewInit {
     } else {
       this.closePopup();
     }
+  }
+  applyFilter(type: 'country' | 'property', value: string): void {
+    this.selectedFilters[type] = value;
+    this.renderMarkers();
+    this.cdr.detectChanges();
+  }
+
+  clearFilters(): void {
+    this.selectedFilters = { country: '', property: '' };
+    this.renderMarkers();
+    this.cdr.detectChanges();
+  }
+
+  openFilter() {
+    this.filterOpen = !this.filterOpen;
+    this.cdr.detectChanges();
   }
 }

@@ -13,7 +13,49 @@
     </svg>
     <span>Reset View</span>
   </button>
+  <button type="submit" class="filter-btn" (click)="openFilter()">
+    <span>Filter</span>
+  </button>
 
+  @if (filterOpen) {
+  <div class="filter-menu">
+
+    <div class="filter-section">
+      <label>Filter by Country:</label>
+      <select (change)="applyFilter('country', $any($event.target).value)" [value]="selectedFilters.country">
+        <option value="" disabled selected>Select Country</option> @for (c of countries; track c) {
+        <option [value]="c">{{c}}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-section">
+      <label>Filter by Property:</label>
+      <select (change)="applyFilter('property', $any($event.target).value)" [value]="selectedFilters.property">
+        <option value="" disabled selected>Select Property</option> @for (p of properties; track p) {
+        <option [value]="p">{{p}}</option>
+        }
+      </select>
+    </div>
+
+    <button class="clear-btn" (click)="clearFilters()">Clear All</button>
+
+    @if ((selectedFilters.country || selectedFilters.property) && filteredResults.length > 0) {
+    <div class="results-container">
+      <div class="results-header">Matches ({{filteredResults.length}}):</div>
+      <div class="results-list">
+        @for (res of filteredResults; track $index) {
+        <div class="result-item">
+          <span class="res-country">{{res.country}}</span>,
+          <span class="res-type">{{res.type}}</span>,
+          <span class="res-name">{{res.name}}</span>
+        </div>
+        }
+      </div>
+    </div>
+    }
+  </div>
+  }
   <!-- Partner Info Popup - appears after flyTo ends, only when algaeInfo is present -->
   @if (popupPartner) {
   <div class="popup-backdrop" (click)="closePopup()"></div>
