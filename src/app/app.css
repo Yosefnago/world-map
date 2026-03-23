@@ -32,11 +32,11 @@
   background: rgba(10, 22, 45, 0.88);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--color-dark-gray);
   border-radius: 10px;
   color: #e8f0ff;
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  font-size: 13px;
+  font-family: var(--font-primary);
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   letter-spacing: 0.2px;
@@ -45,9 +45,9 @@
 }
 
 .reset-zoom-btn:hover {
-  background: rgba(30, 65, 120, 0.95);
+  background: var(--color-dark-blue);
   transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(58, 123, 213, 0.45);
+  box-shadow: 0 6px 22px var(--color-dark-blue);
 }
 
 .reset-zoom-btn:active {
@@ -56,7 +56,7 @@
 
 .reset-zoom-btn svg {
   flex-shrink: 0;
-  color: #7ab8ff;
+  color: var(--color-light-blue);
 }
 
 .filter-btn {
@@ -71,16 +71,31 @@
   background: rgba(10, 22, 45, 0.88);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--color-dark-gray);
   border-radius: 10px;
   color: #e8f0ff;
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  font-size: 13px;
+  font-family: var(--font-primary);
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   letter-spacing: 0.2px;
   transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.filter-btn:hover {
+  background: var(--color-dark-blue);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px var(--color-dark-blue);
+}
+
+.filter-btn:active {
+  transform: translateY(0);
+}
+
+.filter-btn svg {
+  flex-shrink: 0;
+  color: var(--color-light-blue);
 }
 
 .filter-menu {
@@ -92,7 +107,7 @@
   background: rgba(10, 22, 45, 0.95);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--color-dark-gray);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -103,25 +118,27 @@
 
 .filter-section label {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   text-transform: uppercase;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-primary);
   letter-spacing: 0.5px;
-  color: #7ab8ff;
+  color: var(--color-blue);
   margin-bottom: 6px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .filter-section select {
   width: 100%;
   padding: 8px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-dark-gray);
   border-radius: 6px;
-  color: #e8f0ff;
-  font-size: 13px;
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 14px;
   outline: none;
   cursor: pointer;
+  font-family: var(--font-primary);
 }
 
 .filter-section select option {
@@ -132,24 +149,25 @@
 .clear-btn {
   margin-top: 5px;
   padding: 8px;
-  background: rgba(231, 76, 60, 0.2);
-  border: 1px solid rgba(231, 76, 60, 0.3);
+  background: var(--color-orange);
+  border: 1px solid var(--color-dark-gray);
   border-radius: 6px;
-  color: #ff9f94;
-  font-size: 12px;
-  font-weight: 600;
+  color: #fff;
+  font-size: 14px;
+  font-family: var(--font-primary);
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .clear-btn:hover {
-  background: rgba(231, 76, 60, 0.3);
+  background: #a12a0f;
   color: #fff;
 }
 
 .results-container {
   margin-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--color-dark-gray);
   padding-top: 12px;
   max-height: 300px;
   display: flex;
@@ -157,11 +175,11 @@
 }
 
 .results-header {
-  font-size: 11px;
-  color: #7ab8ff;
-  font-weight: 700;
+  font-size: 12px;
+  color: var(--color-blue);
+  font-weight: 600;
   text-transform: uppercase;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-primary);
   margin-bottom: 8px;
 }
 
@@ -183,18 +201,20 @@
 }
 
 .result-item {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.4;
   color: rgba(232, 240, 255, 0.9);
   padding: 6px 8px;
   background: rgba(255, 255, 255, 0.03);
   border-radius: 6px;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-primary);
+  font-weight: 500;
 }
 
 .res-country {
-  font-weight: 600;
-  color: #fff;
+  font-weight: 500;
+  color: var(--color-blue);
+  font-family: var(--font-primary);
 }
 
 .res-type {
@@ -203,7 +223,7 @@
 
 .res-name {
   font-style: italic;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgb(255, 255, 255);
 }
 
 /* Popup Panel */
@@ -282,12 +302,13 @@
   border-radius: 16px;
   padding: 24px;
   color: #fff;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-primary);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
   overflow-y: auto;
 }
 
 .algaeSide {
+  font-family: var(--font-primary);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -312,7 +333,7 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #e8f0ff;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-primary);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -365,7 +386,7 @@
   flex-shrink: 0;
   width: 90px;
   height: 70px;
-  object-fit: cover;
+  object-fit: contain;
   background: #fff;
   border-radius: 8px;
   padding: 0;
@@ -383,8 +404,9 @@
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #7ab8ff;
+  color: var(--color-light-blue);
   font-weight: 600;
+  font-family: var(--font-primary);
 }
 
 .popup-algae-name {
@@ -393,12 +415,14 @@
   line-height: 1.1;
   color: #fff;
   margin-top: -2px;
+  font-family: var(--font-primary);
 }
 
 .popup-scientific {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-light-gray);
   font-style: italic;
+  font-family: var(--font-primary);
 }
 
 .popup-close-corner {
@@ -410,7 +434,7 @@
   border-radius: 50%;
   background: rgba(18, 43, 27, 0.95);
   border: 1px solid rgba(136, 212, 158, 0.25);
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-light-gray);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -440,8 +464,9 @@
   display: inline-flex;
   padding: 4px 12px;
   border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 14px;
+  font-family: var(--font-primary);
+  font-weight: 500;
   background: rgba(136, 212, 158, 0.15);
   color: #88d49e;
   border: 1px solid rgba(136, 212, 158, 0.3);
@@ -476,6 +501,7 @@
 }
 
 .popup-type-country-list {
+  font-family: var(--font-primary);
   display: inline-flex;
   padding: 4px 12px;
   border-radius: 20px;

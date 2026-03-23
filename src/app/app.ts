@@ -86,7 +86,7 @@ export class App implements OnInit, AfterViewInit {
       zoomSnap: 0, zoomDelta: 1,
       maxBounds: REGION_BOUNDS,
       maxBoundsViscosity: 1.0,
-      zoomControl: false
+      zoomControl: true
     }).fitBounds(REGION_BOUNDS);
     delete (L.Icon.Default.prototype as any)._getIconUrl;
     L.Icon.Default.mergeOptions({
@@ -174,8 +174,8 @@ export class App implements OnInit, AfterViewInit {
       style: {
         color: "#2fc989ff",
         fillColor: "#2fc989ff",
-        weight: 0.5,
-        fillOpacity: 0.5
+        weight: 1,
+        fillOpacity: 0.6
       },
       pointToLayer: (_feature, latlng) => L.marker(latlng)
     }).addTo(this.map);
