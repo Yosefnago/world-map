@@ -5,6 +5,7 @@ import {
 import { CommonModule } from '@angular/common';
 import * as L from 'leaflet';
 import { PARTNER_LIST, PopUpData, MacroAlgaeInfo, MicroAlgaeInfo } from './app.data';
+import { environment } from '../environments/environment.development';
 
 
 const REGION_BOUNDS: L.LatLngBoundsExpression = [[0, -20], [75, 100]];
@@ -94,9 +95,10 @@ export class App implements OnInit, AfterViewInit {
       shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
-      detectRetina: false,
-      attribution: '© OpenStreetMap contributors © CARTO'
+    const maptilerKey = environment.mapTilerKey;
+    L.tileLayer(`https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${maptilerKey}`, {
+      attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright/" target="_blank">&copy; OpenStreetMap contributors</a>',
+      crossOrigin: true
     }).addTo(this.map);
 
 

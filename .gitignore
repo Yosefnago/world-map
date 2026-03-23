@@ -44,3 +44,6 @@ Thumbs.db
 
 src/app/app.data.ts
 src/assets/logos
+
+# Local Environments
+src/environments/environment.development.ts
