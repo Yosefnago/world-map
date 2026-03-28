@@ -99,7 +99,6 @@ export class App implements OnInit, AfterViewInit {
       crossOrigin: true
     }).addTo(this.map);
 
-
     this.loadCountries();
     this.renderMarkers();
   }
